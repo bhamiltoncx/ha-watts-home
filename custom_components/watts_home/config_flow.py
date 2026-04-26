@@ -10,12 +10,15 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 from .api import WattsApiClient, WattsApiError
 from .auth import WattsAuth, WattsAuthError
-from .const import DOMAIN
+from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, MAX_SCAN_INTERVAL, MIN_SCAN_INTERVAL
 
 _STEP_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
+        vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
+            int, vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)
+        ),
     }
 )
 
@@ -55,6 +58,7 @@ class WattsHomeConfigFlow(ConfigFlow, domain=DOMAIN):
                     data={
                         CONF_USERNAME: username,
                         CONF_PASSWORD: password,
+                        CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                         **tokens,
                     },
                 )

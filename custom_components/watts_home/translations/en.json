@@ -6,7 +6,8 @@
         "description": "Enter your Watts Home account credentials.",
         "data": {
           "username": "Email address",
-          "password": "Password"
+          "password": "Password",
+          "scan_interval": "Polling interval (seconds)"
         }
       }
     },

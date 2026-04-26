@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import WattsApiClient, WattsApiError
 from .auth import WattsAuth, WattsAuthError, WattsTokenExpiredError
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, TOKEN_REFRESH_BUFFER_SECONDS
+from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, TOKEN_REFRESH_BUFFER_SECONDS
 
 _LOGGER = __import__("logging").getLogger(__name__)
 
@@ -30,11 +30,14 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         entry: ConfigEntry,
         session: AsyncSession,
     ) -> None:
+        scan_interval: int = int(
+            entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        )
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+            update_interval=timedelta(seconds=scan_interval),
         )
         self._entry = entry
         self._session = session
