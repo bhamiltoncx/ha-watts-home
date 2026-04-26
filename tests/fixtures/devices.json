@@ -1,0 +1,2264 @@
+{
+    "errorNumber": 0,
+    "errorMessage": null,
+    "body": [
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Heat",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.5
+                        ],
+                        "Monthly": [
+                            1.6,
+                            0.0,
+                            0.0,
+                            14.8,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000001",
+            "name": "Bart's Room",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 69,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.6,
+                            0.0,
+                            0.0,
+                            0.7,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000002",
+            "name": "Guest Room",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Okay"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat",
+                        "Cool",
+                        "Auto"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": 95,
+                    "Min": 40,
+                    "Max": 100,
+                    "Steps": 1
+                },
+                "TempInterlock": 2.0,
+                "Fan": {
+                    "Active": 1,
+                    "Val": "Auto",
+                    "Enum": [
+                        "Auto",
+                        "On"
+                    ],
+                    "Relay": 0
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 1,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "CoolMin": 45,
+                    "CoolMax": 100,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.1,
+                            0.0,
+                            0.0,
+                            4.5,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "Cool": {
+                        "Daily": [
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000003",
+            "name": "Lounge",
+            "modelId": 7,
+            "modelNumber": "562",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Heat",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            1.4,
+                            0.0,
+                            0.0,
+                            0.5,
+                            2.8,
+                            3.5,
+                            3.4
+                        ],
+                        "Monthly": [
+                            9.8,
+                            0.0,
+                            0.0,
+                            41.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000004",
+            "name": "Office",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Okay"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat",
+                        "Cool",
+                        "Auto"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": 95,
+                    "Min": 40,
+                    "Max": 100,
+                    "Steps": 1
+                },
+                "TempInterlock": 2.0,
+                "Fan": {
+                    "Active": 1,
+                    "Val": "Auto",
+                    "Enum": [
+                        "Auto",
+                        "On"
+                    ],
+                    "Relay": 0
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 1,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "CoolMin": 45,
+                    "CoolMax": 100,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.7
+                        ],
+                        "Monthly": [
+                            0.5,
+                            0.0,
+                            0.0,
+                            13.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "Cool": {
+                        "Daily": [
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000005",
+            "name": "Primary Bedroom",
+            "modelId": 7,
+            "modelNumber": "562",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 69,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 43,
+                        "Status": "Okay"
+                    },
+                    "RH": {
+                        "Val": 29,
+                        "Status": "Okay"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat",
+                        "Cool",
+                        "Auto"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": 95,
+                    "Min": 40,
+                    "Max": 100,
+                    "Steps": 1
+                },
+                "Hum": {
+                    "Active": 0,
+                    "Val": 24,
+                    "Min": 10,
+                    "Max": 80,
+                    "Steps": 1
+                },
+                "Dehum": {
+                    "Active": 0,
+                    "Val": 60,
+                    "Min": 20,
+                    "Max": 90,
+                    "Steps": 1
+                },
+                "TempInterlock": 2.0,
+                "HumInterlock": 1,
+                "Fan": {
+                    "Active": 1,
+                    "Val": "Auto",
+                    "Enum": [
+                        "Auto",
+                        "On"
+                    ],
+                    "Relay": 0
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 1,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "CoolMin": 45,
+                    "CoolMax": 100,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.8,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            3.3,
+                            0.0,
+                            0.0,
+                            8.2,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "Cool": {
+                        "Daily": [
+                            0.2,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.2,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:47Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000006",
+            "name": "Living",
+            "modelId": 8,
+            "modelNumber": "563",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Heat",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.6,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            3.7
+                        ],
+                        "Monthly": [
+                            4.6,
+                            0.0,
+                            0.0,
+                            21.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:43Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000007",
+            "name": "Primary Bathroom",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Okay"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat",
+                        "Cool",
+                        "Auto"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": 95,
+                    "Min": 40,
+                    "Max": 100,
+                    "Steps": 1
+                },
+                "TempInterlock": 2.0,
+                "Fan": {
+                    "Active": 1,
+                    "Val": "Auto",
+                    "Enum": [
+                        "Auto",
+                        "On"
+                    ],
+                    "Relay": 0
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 1,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65,
+                            "C": 85
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70,
+                            "C": 78
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65,
+                            "C": 85
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "CoolMin": 45,
+                    "CoolMax": 100,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.9,
+                            0.2,
+                            2.6
+                        ],
+                        "Monthly": [
+                            4.2,
+                            0.0,
+                            0.0,
+                            11.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "Cool": {
+                        "Daily": [
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.1,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000008",
+            "name": "Kitchen",
+            "modelId": 7,
+            "modelNumber": "562",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 62,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 60,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.2,
+                            0.0,
+                            0.0,
+                            3.6,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000009",
+            "name": "Garage",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 68,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Monthly": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            7.3,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:46Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000010",
+            "name": "Lisa's Room",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        },
+        {
+            "data": {
+                "Sensors": {
+                    "Room": {
+                        "Val": 69,
+                        "Status": "Okay"
+                    },
+                    "Floor": {
+                        "Val": 0,
+                        "Status": "Absent"
+                    },
+                    "Outdoor": {
+                        "Val": 50,
+                        "Status": "Absent"
+                    }
+                },
+                "State": {
+                    "Op": "Off",
+                    "Sub": "None"
+                },
+                "Mode": {
+                    "Active": 1,
+                    "Val": "Heat",
+                    "Enum": [
+                        "Off",
+                        "Heat"
+                    ]
+                },
+                "Target": {
+                    "Active": 1,
+                    "Sensor": "Room",
+                    "Hold": 0,
+                    "Heat": 68,
+                    "Cool": null,
+                    "Min": 40,
+                    "Max": 95,
+                    "Steps": 1
+                },
+                "TempUnits": {
+                    "Active": 1,
+                    "Val": "F",
+                    "Enum": [
+                        "F",
+                        "C"
+                    ]
+                },
+                "Units": "Imperial",
+                "SchedEnable": {
+                    "Active": 1,
+                    "Val": "Off",
+                    "Enum": [
+                        "Off",
+                        "On"
+                    ]
+                },
+                "Schedule": {
+                    "SchedActive": 0,
+                    "HeatActive": 1,
+                    "CoolActive": 0,
+                    "FloorActive": 0,
+                    "Grp": null,
+                    "Event": null,
+                    "Grp1": {
+                        "Days": "MTWRF",
+                        "W": {
+                            "T": "06:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "08:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "22:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp2": {
+                        "Days": "A",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp3": {
+                        "Days": "S",
+                        "W": {
+                            "T": "07:00",
+                            "H": 70
+                        },
+                        "L": {
+                            "T": "09:00",
+                            "H": 65
+                        },
+                        "R": {
+                            "T": "17:00",
+                            "H": 70
+                        },
+                        "S": {
+                            "T": "23:00",
+                            "H": 65
+                        }
+                    },
+                    "Grp4": {},
+                    "Grp5": {},
+                    "Grp6": {},
+                    "Grp7": {},
+                    "HeatMin": 40,
+                    "HeatMax": 95,
+                    "FloorMin": 40,
+                    "FloorMax": 85,
+                    "TempSteps": 1,
+                    "TimeSteps": 10
+                },
+                "Energy": {
+                    "Heat": {
+                        "Daily": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Monthly": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.8,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "DateTime": "2026-04-26T19:22:47Z",
+                "TZOffset": -21600
+            },
+            "isConnected": true,
+            "requestingUser": "00000000-0000-0000-0000-000000000001",
+            "deviceId": "00000000-0000-0000-0001-000000000011",
+            "name": "Movie Room",
+            "modelId": 6,
+            "modelNumber": "561",
+            "deviceType": "Thermostat",
+            "deviceTypeId": 2,
+            "location": {
+                "locationId": "00000000-0000-0000-0000-000000000002",
+                "name": "Maple Grove",
+                "address": {
+                    "address": "742 Evergreen Terrace",
+                    "address2": "",
+                    "city": "Springfield",
+                    "state_province": "IL",
+                    "zipcode": "62701",
+                    "country": "US"
+                },
+                "awayState": 0,
+                "userType": 1
+            },
+            "imageUrl": null,
+            "isShared": false
+        }
+    ]
+}
