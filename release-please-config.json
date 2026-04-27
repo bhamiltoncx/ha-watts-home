@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "extra-files": [
+    {
+      "type": "json",
+      "path": "custom_components/watts_home/manifest.json",
+      "jsonpath": "$.version"
+    }
+  ]
+}
