@@ -1,10 +1,11 @@
 {
   "domain": "watts_home",
   "name": "Watts Home (Tekmar)",
-  "codeowners": [],
+  "codeowners": ["@bhamiltoncx"],
   "config_flow": true,
   "documentation": "https://github.com/bhamiltoncx/ha-watts-home",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/bhamiltoncx/ha-watts-home/issues",
   "requirements": ["curl_cffi>=0.7.0"],
   "version": "1.0.0"
 }
