@@ -18,7 +18,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import HA_TO_WATTS_MODE, WATTS_TO_HA_ACTION, WATTS_TO_HA_MODE, DOMAIN
+from .const import DOMAIN, HA_TO_WATTS_MODE, MODEL_NAMES, WATTS_TO_HA_ACTION, WATTS_TO_HA_MODE
 from .coordinator import WattsDataUpdateCoordinator
 
 # ---------------------------------------------------------------------------
@@ -164,7 +164,7 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self._device_id)},
             name=device["name"],
-            model=device["modelNumber"],
+            model=MODEL_NAMES.get(device["modelNumber"], f"Tekmar WiFi Thermostat {device['modelNumber']}"),
             manufacturer="Watts Home",
         )
 

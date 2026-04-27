@@ -23,6 +23,13 @@ CONF_SCAN_INTERVAL: Final = "scan_interval"
 
 TOKEN_REFRESH_BUFFER_SECONDS: Final = 120
 
+MODEL_NAMES: dict[str, str] = {
+    "561": "Tekmar WiFi Thermostat 561",
+    "562": "Tekmar WiFi Thermostat 562",
+    "563": "Tekmar WiFi Thermostat 563",
+    "564": "Tekmar WiFi Thermostat 564",
+}
+
 # Maps Watts API HVAC mode values to Home Assistant HVAC modes.
 # Keys match exactly what the API returns (title-case).
 WATTS_TO_HA_MODE: dict[str, str] = {
