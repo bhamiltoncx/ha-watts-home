@@ -1,0 +1,118 @@
+rules:
+  # Bronze
+  action_setup:
+    status: exempt
+    comment: No custom actions registered; thermostat control uses standard ClimateEntity service calls.
+  appropriate_polling: done
+  brands: done
+  common_modules: done
+  config_flow: done
+  config_flow_test_coverage:
+    status: todo
+    comment: Config flow has no automated tests yet.
+  dependency_transparency: done
+  docs_actions:
+    status: exempt
+    comment: No custom actions registered.
+  docs_high_level_description: done
+  docs_installation_instructions: done
+  docs_removal_instructions:
+    status: todo
+    comment: README does not yet describe how to remove the integration.
+  entity_event_setup:
+    status: exempt
+    comment: Cloud polling only; no push events from the API.
+  entity_unique_id: done
+  has_entity_name: done
+  runtime_data: done
+  test_before_configure: done
+  test_before_setup: done
+  unique_config_entry: done
+
+  # Silver
+  action_exceptions:
+    status: exempt
+    comment: No custom actions registered.
+  config_entry_unloading: done
+  docs_configuration_parameters: done
+  docs_installation_parameters: done
+  entity_unavailable: done
+  integration_owner: done
+  log_when_unavailable:
+    status: todo
+    comment: Coordinator does not yet log when a device transitions to unavailable.
+  parallel_updates:
+    status: todo
+    comment: PARALLEL_UPDATES constant not yet set on climate/sensor platforms.
+  reauthentication_flow:
+    status: todo
+    comment: Token refresh and re-login are handled automatically, but no HA re-auth UI flow is implemented.
+  test_coverage:
+    status: todo
+    comment: Auth and API have integration tests; climate and sensor have unit tests. Config flow and coordinator have no test coverage.
+
+  # Gold
+  devices: done
+  diagnostics:
+    status: todo
+    comment: No diagnostics platform implemented.
+  discovery:
+    status: exempt
+    comment: Cloud polling integration; no local discovery mechanism.
+  discovery_update_info:
+    status: exempt
+    comment: No discovery mechanism.
+  docs_data_update:
+    status: todo
+    comment: README does not describe the polling mechanism or update frequency.
+  docs_examples:
+    status: todo
+    comment: No automation/template examples in docs.
+  docs_known_limitations:
+    status: todo
+    comment: No known limitations section (e.g. Cloudflare dependency, REST-only API).
+  docs_supported_devices: done
+  docs_supported_functions:
+    status: todo
+    comment: README does not enumerate which entity features each model exposes.
+  docs_troubleshooting:
+    status: todo
+    comment: No troubleshooting section.
+  docs_use_cases:
+    status: todo
+    comment: No use-case examples in docs.
+  dynamic_devices:
+    status: exempt
+    comment: All devices are fixed to a location; no devices are added or removed at runtime.
+  entity_category:
+    status: todo
+    comment: Outdoor temp and humidity sensors could be marked EntityCategory.DIAGNOSTIC.
+  entity_device_class: done
+  entity_disabled_by_default:
+    status: todo
+    comment: Consider disabling outdoor temp and humidity sensors by default.
+  entity_translations: done
+  exception_translations:
+    status: todo
+    comment: WattsAuthError and WattsApiError messages are not translatable strings.
+  icon_translations:
+    status: todo
+    comment: No icons.json defined for entity icons.
+  reconfiguration_flow:
+    status: todo
+    comment: No reconfigure flow to update credentials or scan_interval post-setup.
+  repair_issues:
+    status: todo
+    comment: No repair issues raised (e.g. on repeated auth failure).
+  stale_devices:
+    status: exempt
+    comment: All devices belong to a fixed location; the API does not support dynamic device addition or removal.
+
+  # Platinum
+  async_dependency: done
+  inject_websession:
+    status: exempt
+    comment: curl_cffi (required for Cloudflare TLS impersonation) is not compatible with HA's aiohttp websession injection.
+  strict_typing:
+    status: todo
+    comment: All code is annotated but mypy is not configured or enforced in CI.
