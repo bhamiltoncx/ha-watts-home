@@ -1,4 +1,5 @@
 """Unit tests for climate.py mapping helpers using real fixture data."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -148,7 +149,12 @@ class TestModel562:
     def test_hvac_action_off_or_idle(self, devices: list[dict[str, Any]]) -> None:
         d = _by_model(devices, "562")
         action = device_hvac_action(d)
-        assert action in (HVACAction.OFF, HVACAction.IDLE, HVACAction.HEATING, HVACAction.COOLING)
+        assert action in (
+            HVACAction.OFF,
+            HVACAction.IDLE,
+            HVACAction.HEATING,
+            HVACAction.COOLING,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -158,16 +164,18 @@ class TestModel562:
 
 class TestModelNames:
     def test_561_model_name(self, devices: list[dict[str, Any]]) -> None:
-        d = _by_model(devices, "561")
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
+
         assert MODEL_NAMES["561"] == "Tekmar WiFi Thermostat 561"
 
     def test_562_model_name(self, devices: list[dict[str, Any]]) -> None:
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
+
         assert MODEL_NAMES["562"] == "Tekmar WiFi Thermostat 562"
 
     def test_unknown_model_fallback(self, devices: list[dict[str, Any]]) -> None:
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
+
         model_num = "999"
         name = MODEL_NAMES.get(model_num, f"Tekmar WiFi Thermostat {model_num}")
         assert name == "Tekmar WiFi Thermostat 999"

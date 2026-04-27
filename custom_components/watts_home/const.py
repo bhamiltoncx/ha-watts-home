@@ -1,4 +1,5 @@
 """Constants for the Watts Home (Tekmar) integration."""
+
 from typing import Final
 
 DOMAIN: Final = "watts_home"
@@ -10,7 +11,9 @@ TENANT: Final = "wattsb2cap02.onmicrosoft.com"
 POLICY: Final = "B2C_1A_Residential_UnifiedSignUpOrSignIn"
 SCOPE: Final = "https://wattsb2cap02.onmicrosoft.com/wattsapiresi/manage offline_access openid profile"
 REDIRECT_URI: Final = f"msal{CLIENT_ID}://auth"
-BROWSER_UA: Final = "Dalvik/2.1.0 (Linux; U; Android 16; SM-S901W Build/BP2A.250605.031.A3)"
+BROWSER_UA: Final = (
+    "Dalvik/2.1.0 (Linux; U; Android 16; SM-S901W Build/BP2A.250605.031.A3)"
+)
 CODE_VERIFIER: Final = "DM6nhvQSKnj72gkQQ5T1tCgCYGy5vdXnzdIQw3Bh46TX7pDvAcisyWDyt5UL3NQH8q4NoqMvRICQRmxCeDU3qHj8Jvciqo4RHcRiyjIlbB9q0k8LnUu8zHIdJHRLtk3J"
 
 DEFAULT_SCAN_INTERVAL: Final = 60

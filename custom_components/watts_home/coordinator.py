@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for the Watts Home integration."""
+
 from __future__ import annotations
 
 import time
@@ -14,7 +15,12 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import WattsApiClient, WattsApiError
 from .auth import WattsAuth, WattsAuthError, WattsTokenExpiredError
-from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, TOKEN_REFRESH_BUFFER_SECONDS
+from .const import (
+    CONF_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    TOKEN_REFRESH_BUFFER_SECONDS,
+)
 
 _LOGGER = __import__("logging").getLogger(__name__)
 

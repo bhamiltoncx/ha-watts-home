@@ -1,9 +1,14 @@
 """Sensor platform for the Watts Home (Tekmar) integration."""
+
 from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature, PERCENTAGE
 from homeassistant.core import HomeAssistant
@@ -35,7 +40,9 @@ def _device_info(device: dict[str, Any]) -> DeviceInfo:
     return DeviceInfo(
         identifiers={(DOMAIN, device["deviceId"])},
         name=device["name"],
-        model=MODEL_NAMES.get(device["modelNumber"], f"Tekmar WiFi Thermostat {device['modelNumber']}"),
+        model=MODEL_NAMES.get(
+            device["modelNumber"], f"Tekmar WiFi Thermostat {device['modelNumber']}"
+        ),
         manufacturer="Watts Home",
     )
 
@@ -89,9 +96,7 @@ class WattsOutdoorTempSensor(
         return None
 
 
-class WattsHumiditySensor(
-    CoordinatorEntity[WattsDataUpdateCoordinator], SensorEntity
-):
+class WattsHumiditySensor(CoordinatorEntity[WattsDataUpdateCoordinator], SensorEntity):
     """Relative humidity sensor for a Watts/Tekmar device."""
 
     _attr_device_class = SensorDeviceClass.HUMIDITY

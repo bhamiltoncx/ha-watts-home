@@ -2,6 +2,7 @@
 
 Skip when WAHA_USER / WAHA_PASS environment variables are not set.
 """
+
 from __future__ import annotations
 
 import importlib.util

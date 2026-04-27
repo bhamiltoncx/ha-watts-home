@@ -6,6 +6,7 @@ Happy-path and already-configured tests require real credentials
 The invalid-auth test uses a deliberate wrong password so the login
 server rejects it — no mocks needed.
 """
+
 from __future__ import annotations
 
 import os

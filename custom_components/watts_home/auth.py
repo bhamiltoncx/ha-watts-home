@@ -1,4 +1,5 @@
 """Azure AD B2C PKCE authentication for the Watts Home API."""
+
 from __future__ import annotations
 
 import base64
@@ -87,9 +88,7 @@ class WattsAuth:
         _LOGGER.debug("Step 1: GET authorize URL")
         resp = await session.get(authorize_url, headers={"User-Agent": BROWSER_UA})
         if resp.status_code != 200:
-            raise WattsAuthError(
-                f"Authorize GET failed: HTTP {resp.status_code}"
-            )
+            raise WattsAuthError(f"Authorize GET failed: HTTP {resp.status_code}")
 
         # ------------------------------------------------------------------
         # Extract csrf + transaction_cid from cookies
@@ -145,9 +144,7 @@ class WattsAuth:
             },
         )
         if resp.status_code != 200:
-            raise WattsAuthError(
-                f"SelfAsserted POST failed: HTTP {resp.status_code}"
-            )
+            raise WattsAuthError(f"SelfAsserted POST failed: HTTP {resp.status_code}")
         result = resp.json()
         if result.get("status") != "200":
             raise WattsAuthError(f"Credentials rejected: {resp.text}")
@@ -182,9 +179,7 @@ class WattsAuth:
         parsed = urllib.parse.urlparse(location)
         qs = urllib.parse.parse_qs(parsed.query)
         if "code" not in qs:
-            raise WattsAuthError(
-                f"No 'code' param in redirect Location: {location!r}"
-            )
+            raise WattsAuthError(f"No 'code' param in redirect Location: {location!r}")
         auth_code = qs["code"][0]
 
         _LOGGER.debug("Step 3 OK: got auth code")
@@ -195,13 +190,9 @@ class WattsAuth:
         return await WattsAuth._exchange_code(session, auth_code)
 
     @staticmethod
-    async def _exchange_code(
-        session: AsyncSession, code: str
-    ) -> dict[str, Any]:
+    async def _exchange_code(session: AsyncSession, code: str) -> dict[str, Any]:
         """POST the auth code to the token endpoint and return the token dict."""
-        token_url = (
-            f"{AUTH_HOST}/tfp/{TENANT}/{POLICY}/oauth2/v2.0/token?haschrome=1"
-        )
+        token_url = f"{AUTH_HOST}/tfp/{TENANT}/{POLICY}/oauth2/v2.0/token?haschrome=1"
         # Scope must use literal "+" separators in form bodies (not %20 / %2B).
         scope_encoded = SCOPE.replace(" ", "+")
         body = (
@@ -231,16 +222,12 @@ class WattsAuth:
         return tokens
 
     @staticmethod
-    async def refresh(
-        session: AsyncSession, refresh_token: str
-    ) -> dict[str, Any]:
+    async def refresh(session: AsyncSession, refresh_token: str) -> dict[str, Any]:
         """Use a refresh token to obtain new tokens.
 
         Raises WattsTokenExpiredError if the server returns 4xx.
         """
-        token_url = (
-            f"{AUTH_HOST}/tfp/{TENANT}/{POLICY}/oauth2/v2.0/token?haschrome=1"
-        )
+        token_url = f"{AUTH_HOST}/tfp/{TENANT}/{POLICY}/oauth2/v2.0/token?haschrome=1"
         scope_encoded = SCOPE.replace(" ", "+")
         body = (
             f"client_id={CLIENT_ID}"

@@ -1,4 +1,5 @@
 """Watts Home REST API client."""
+
 from __future__ import annotations
 
 import json
@@ -33,9 +34,7 @@ class WattsApiClient:
 
     async def _get(self, path: str) -> Any:
         _LOGGER.debug("GET %s", path)
-        resp = await self._session.get(
-            f"{API_BASE_URL}{path}", headers=self._headers()
-        )
+        resp = await self._session.get(f"{API_BASE_URL}{path}", headers=self._headers())
         _LOGGER.debug("GET %s → HTTP %s", path, resp.status_code)
         if resp.status_code >= 400:
             raise WattsApiError(f"GET {path} failed: HTTP {resp.status_code}")
@@ -52,9 +51,7 @@ class WattsApiClient:
 
     async def _patch(self, path: str, payload: dict[str, Any]) -> Any:
         if _LOGGER.isEnabledFor(logging.DEBUG):
-            _LOGGER.debug(
-                "PATCH %s payload:\n%s", path, json.dumps(payload, indent=2)
-            )
+            _LOGGER.debug("PATCH %s payload:\n%s", path, json.dumps(payload, indent=2))
         resp = await self._session.patch(
             f"{API_BASE_URL}{path}",
             json=payload,

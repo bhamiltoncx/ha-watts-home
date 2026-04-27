@@ -1,4 +1,5 @@
 """Climate platform for the Watts Home (Tekmar) integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -18,7 +19,13 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, HA_TO_WATTS_MODE, MODEL_NAMES, WATTS_TO_HA_ACTION, WATTS_TO_HA_MODE
+from .const import (
+    DOMAIN,
+    HA_TO_WATTS_MODE,
+    MODEL_NAMES,
+    WATTS_TO_HA_ACTION,
+    WATTS_TO_HA_MODE,
+)
 from .coordinator import WattsDataUpdateCoordinator
 
 # ---------------------------------------------------------------------------
@@ -137,8 +144,7 @@ async def async_setup_entry(
 ) -> None:
     coordinator: WattsDataUpdateCoordinator = entry.runtime_data
     async_add_entities(
-        WattsClimateEntity(coordinator, device)
-        for device in coordinator.data
+        WattsClimateEntity(coordinator, device) for device in coordinator.data
     )
 
 
@@ -164,7 +170,9 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self._device_id)},
             name=device["name"],
-            model=MODEL_NAMES.get(device["modelNumber"], f"Tekmar WiFi Thermostat {device['modelNumber']}"),
+            model=MODEL_NAMES.get(
+                device["modelNumber"], f"Tekmar WiFi Thermostat {device['modelNumber']}"
+            ),
             manufacturer="Watts Home",
         )
 

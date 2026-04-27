@@ -1,4 +1,5 @@
 """Config flow for the Watts Home (Tekmar) integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -10,7 +11,13 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 from .api import WattsApiClient, WattsApiError
 from .auth import WattsAuth, WattsAuthError
-from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, MAX_SCAN_INTERVAL, MIN_SCAN_INTERVAL
+from .const import (
+    CONF_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    MAX_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
+)
 
 _STEP_SCHEMA = vol.Schema(
     {

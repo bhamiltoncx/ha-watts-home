@@ -1,4 +1,5 @@
 """Unit tests for sensor.py using real fixture data."""
+
 from __future__ import annotations
 
 import importlib.util
