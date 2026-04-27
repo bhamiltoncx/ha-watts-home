@@ -50,7 +50,10 @@ _HA_ACTION_MAP: dict[str, HVACAction] = {
 
 
 def device_hvac_modes(device: dict[str, Any]) -> list[HVACMode]:
-    watts_enums: list[str] = device["data"]["Mode"]["Enum"]
+    mode = device["data"].get("Mode")
+    if mode is None:
+        return [HVACMode.OFF]
+    watts_enums: list[str] = mode["Enum"]
     return [
         _HA_MODE_MAP[ha]
         for w in watts_enums
@@ -59,12 +62,18 @@ def device_hvac_modes(device: dict[str, Any]) -> list[HVACMode]:
 
 
 def device_hvac_mode(device: dict[str, Any]) -> HVACMode:
-    ha = WATTS_TO_HA_MODE.get(device["data"]["Mode"]["Val"], "off")
+    mode = device["data"].get("Mode")
+    if mode is None:
+        return HVACMode.OFF
+    ha = WATTS_TO_HA_MODE.get(mode["Val"], "off")
     return _HA_MODE_MAP.get(ha, HVACMode.OFF)
 
 
 def device_hvac_action(device: dict[str, Any]) -> HVACAction | None:
-    op: str = device["data"]["State"]["Op"]
+    state = device["data"].get("State")
+    if state is None:
+        return None
+    op: str = state["Op"]
     ha = WATTS_TO_HA_ACTION.get(op)
     if ha is None:
         return None
@@ -72,14 +81,22 @@ def device_hvac_action(device: dict[str, Any]) -> HVACAction | None:
 
 
 def device_current_temperature(device: dict[str, Any]) -> float | None:
-    room = device["data"]["Sensors"]["Room"]
+    sensors = device["data"].get("Sensors")
+    if sensors is None:
+        return None
+    room = sensors.get("Room")
+    if room is None:
+        return None
     if room.get("Status") == "Okay":
         return float(room["Val"])
     return None
 
 
 def device_current_humidity(device: dict[str, Any]) -> float | None:
-    rh = device["data"]["Sensors"].get("RH")
+    sensors = device["data"].get("Sensors")
+    if sensors is None:
+        return None
+    rh = sensors.get("RH")
     if rh and rh.get("Status") == "Okay":
         return float(rh["Val"])
     return None
@@ -88,7 +105,9 @@ def device_current_humidity(device: dict[str, Any]) -> float | None:
 def device_target_temperature(device: dict[str, Any]) -> float | None:
     """Single setpoint — used in heat or cool mode."""
     mode = device_hvac_mode(device)
-    target = device["data"]["Target"]
+    target = device["data"].get("Target")
+    if target is None:
+        return None
     if mode == HVACMode.COOL:
         v = target.get("Cool")
         return float(v) if v is not None else None
@@ -97,18 +116,27 @@ def device_target_temperature(device: dict[str, Any]) -> float | None:
 
 def device_target_temp_high(device: dict[str, Any]) -> float | None:
     """Cool setpoint for heat_cool mode."""
-    v = device["data"]["Target"].get("Cool")
+    target = device["data"].get("Target")
+    if target is None:
+        return None
+    v = target.get("Cool")
     return float(v) if v is not None else None
 
 
 def device_target_temp_low(device: dict[str, Any]) -> float | None:
     """Heat setpoint for heat_cool mode."""
-    v = device["data"]["Target"].get("Heat")
+    target = device["data"].get("Target")
+    if target is None:
+        return None
+    v = target.get("Heat")
     return float(v) if v is not None else None
 
 
 def device_temperature_unit(device: dict[str, Any]) -> str:
-    val = device["data"]["TempUnits"]["Val"]
+    temp_units = device["data"].get("TempUnits")
+    if temp_units is None:
+        return UnitOfTemperature.CELSIUS
+    val = temp_units["Val"]
     return UnitOfTemperature.FAHRENHEIT if val == "F" else UnitOfTemperature.CELSIUS
 
 
@@ -128,7 +156,10 @@ def device_supported_features(device: dict[str, Any]) -> ClimateEntityFeature:
 
 
 def device_schedule_active(device: dict[str, Any]) -> bool:
-    val: str = device["data"]["SchedEnable"]["Val"]
+    sched = device["data"].get("SchedEnable")
+    if sched is None:
+        return False
+    val: str = sched["Val"]
     return val.lower() in ("on", "enabled")
 
 
@@ -229,15 +260,18 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
 
     @property
     def min_temp(self) -> float:
-        return float(self._device()["data"]["Target"]["Min"])
+        target = self._device()["data"].get("Target")
+        return float(target["Min"]) if target is not None else 40.0
 
     @property
     def max_temp(self) -> float:
-        return float(self._device()["data"]["Target"]["Max"])
+        target = self._device()["data"].get("Target")
+        return float(target["Max"]) if target is not None else 95.0
 
     @property
     def target_temperature_step(self) -> float:
-        return float(self._device()["data"]["Target"]["Steps"])
+        target = self._device()["data"].get("Target")
+        return float(target["Steps"]) if target is not None else 1.0
 
     @property
     def temperature_unit(self) -> str:
