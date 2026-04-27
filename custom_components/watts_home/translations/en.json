@@ -1,4 +1,14 @@
 {
+  "entity": {
+    "sensor": {
+      "outdoor_temperature": {
+        "name": "Outdoor Temperature"
+      },
+      "humidity": {
+        "name": "Humidity"
+      }
+    }
+  },
   "config": {
     "step": {
       "user": {
