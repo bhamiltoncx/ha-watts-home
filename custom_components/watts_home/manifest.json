@@ -6,6 +6,7 @@
   "documentation": "https://github.com/bhamiltoncx/ha-watts-home",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/bhamiltoncx/ha-watts-home/issues",
+  "loggers": ["custom_components.watts_home"],
   "requirements": ["curl_cffi>=0.7.0"],
   "version": "1.0.0"
 }

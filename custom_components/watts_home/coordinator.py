@@ -48,21 +48,25 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         expires_on: int = int(data.get("expires_on", 0))
 
         if expires_on > time.time() + TOKEN_REFRESH_BUFFER_SECONDS:
+            _LOGGER.debug("Access token still valid (expires_on=%s)", expires_on)
             return str(data["access_token"])
 
         refresh_token: str = str(data.get("refresh_token", ""))
         if refresh_token:
             try:
+                _LOGGER.debug("Access token expiring, attempting refresh")
                 new_tokens = await WattsAuth.refresh(self._session, refresh_token)
                 data.update(new_tokens)
                 self.hass.config_entries.async_update_entry(self._entry, data=data)
+                _LOGGER.debug("Token refreshed successfully")
                 return str(data["access_token"])
             except WattsTokenExpiredError:
-                pass  # fall through to full re-login
+                _LOGGER.debug("Refresh token expired, falling back to full re-login")
             except WattsAuthError as exc:
                 raise ConfigEntryAuthFailed(str(exc)) from exc
 
         # Refresh token expired — attempt full re-login.
+        _LOGGER.debug("Performing full re-login")
         try:
             new_tokens = await WattsAuth.login(
                 self._session,
@@ -71,6 +75,7 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             )
             data.update(new_tokens)
             self.hass.config_entries.async_update_entry(self._entry, data=data)
+            _LOGGER.debug("Full re-login succeeded")
             return str(data["access_token"])
         except WattsAuthError as exc:
             raise ConfigEntryAuthFailed(str(exc)) from exc
@@ -82,7 +87,12 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             locations = await client.get_locations()
             location = WattsApiClient.find_default_location(locations)
             self.location_id = str(location["locationId"])
-            return await client.get_devices(self.location_id)
+            _LOGGER.debug(
+                "Polling location %s (%s)", location.get("name"), self.location_id
+            )
+            devices = await client.get_devices(self.location_id)
+            _LOGGER.debug("Fetched %d device(s)", len(devices))
+            return devices
         except ConfigEntryAuthFailed:
             raise
         except (WattsApiError, WattsAuthError) as exc:

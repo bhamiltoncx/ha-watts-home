@@ -4,6 +4,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import logging
 import urllib.parse
 from typing import Any
 
@@ -19,6 +20,14 @@ from .const import (
     SCOPE,
     TENANT,
 )
+
+_LOGGER = logging.getLogger(__name__)
+
+_SCRUB = {"access_token", "refresh_token", "id_token", "client_info"}
+
+
+def _scrub(data: dict[str, Any]) -> dict[str, Any]:
+    return {k: ("***" if k in _SCRUB else v) for k, v in data.items()}
 
 
 class WattsAuthError(Exception):
@@ -50,6 +59,8 @@ class WattsAuth:
           3. GET the confirmed URL (no redirect) to obtain the auth code.
           4. Exchange the auth code for tokens.
         """
+        _LOGGER.debug("Starting PKCE login flow for %s", username)
+
         # ------------------------------------------------------------------
         # Step 1: GET authorize URL
         # ------------------------------------------------------------------
@@ -73,6 +84,7 @@ class WattsAuth:
             f"{AUTH_HOST}/tfp/{TENANT}/{POLICY}/oauth2/v2.0/authorize?{params}"
         )
 
+        _LOGGER.debug("Step 1: GET authorize URL")
         resp = await session.get(authorize_url, headers={"User-Agent": BROWSER_UA})
         if resp.status_code != 200:
             raise WattsAuthError(
@@ -100,6 +112,8 @@ class WattsAuth:
                 "Missing x-ms-cpim-trans cookie / C_ID after authorize GET"
             )
 
+        _LOGGER.debug("Step 1 OK: got CSRF token and transaction ID")
+
         # Build transactionEncoded (base64url WITH padding = Go's url.URLEncoding)
         tid_json = json.dumps({"TID": transaction_cid}, separators=(",", ":"))
         transaction_encoded = base64.urlsafe_b64encode(tid_json.encode()).decode()
@@ -119,6 +133,7 @@ class WattsAuth:
                 "password": password,
             }
         )
+        _LOGGER.debug("Step 2: POST credentials to SelfAsserted")
         resp = await session.post(
             self_asserted_url,
             data=form_body.encode(),
@@ -137,6 +152,8 @@ class WattsAuth:
         if result.get("status") != "200":
             raise WattsAuthError(f"Credentials rejected: {resp.text}")
 
+        _LOGGER.debug("Step 2 OK: credentials accepted")
+
         # ------------------------------------------------------------------
         # Step 3: GET confirmed → 302 with auth code
         # ------------------------------------------------------------------
@@ -147,6 +164,7 @@ class WattsAuth:
             f"&csrf_token={csrf}"
             f"&tx=StateProperties={transaction_encoded}"
         )
+        _LOGGER.debug("Step 3: GET confirmed endpoint")
         resp = await session.get(
             confirm_url,
             allow_redirects=False,
@@ -168,6 +186,8 @@ class WattsAuth:
                 f"No 'code' param in redirect Location: {location!r}"
             )
         auth_code = qs["code"][0]
+
+        _LOGGER.debug("Step 3 OK: got auth code")
 
         # ------------------------------------------------------------------
         # Step 4: Exchange code for tokens
@@ -193,6 +213,7 @@ class WattsAuth:
             f"&redirect_uri={urllib.parse.quote(REDIRECT_URI, safe='')}"
             f"&code_verifier={CODE_VERIFIER}"
         )
+        _LOGGER.debug("Step 4: exchanging auth code for tokens")
         resp = await session.post(
             token_url,
             data=body.encode(),
@@ -205,7 +226,9 @@ class WattsAuth:
             raise WattsAuthError(
                 f"Token exchange failed: HTTP {resp.status_code} — {resp.text}"
             )
-        return resp.json()
+        tokens = resp.json()
+        _LOGGER.debug("Step 4 OK: tokens received: %s", _scrub(tokens))
+        return tokens
 
     @staticmethod
     async def refresh(
@@ -227,6 +250,7 @@ class WattsAuth:
             f"&refresh_token={urllib.parse.quote(refresh_token, safe='')}"
             f"&redirect_uri={urllib.parse.quote(REDIRECT_URI, safe='')}"
         )
+        _LOGGER.debug("Refreshing access token")
         resp = await session.post(
             token_url,
             data=body.encode(),
@@ -239,4 +263,6 @@ class WattsAuth:
             raise WattsTokenExpiredError(
                 f"Refresh token rejected: HTTP {resp.status_code} — {resp.text}"
             )
-        return resp.json()
+        tokens = resp.json()
+        _LOGGER.debug("Token refresh OK: %s", _scrub(tokens))
+        return tokens

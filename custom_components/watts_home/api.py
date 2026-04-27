@@ -1,11 +1,15 @@
 """Watts Home REST API client."""
 from __future__ import annotations
 
+import json
+import logging
 from typing import Any
 
 from curl_cffi.requests import AsyncSession
 
 from .const import API_BASE_URL, BROWSER_UA
+
+_LOGGER = logging.getLogger(__name__)
 
 _HEADERS: dict[str, str] = {
     "Api-Version": "2.0",
@@ -28,22 +32,35 @@ class WattsApiClient:
         return {**_HEADERS, "Authorization": f"Bearer {self._token}"}
 
     async def _get(self, path: str) -> Any:
+        _LOGGER.debug("GET %s", path)
         resp = await self._session.get(
             f"{API_BASE_URL}{path}", headers=self._headers()
         )
+        _LOGGER.debug("GET %s → HTTP %s", path, resp.status_code)
         if resp.status_code >= 400:
             raise WattsApiError(f"GET {path} failed: HTTP {resp.status_code}")
         body = resp.json()
         if body.get("errorNumber", 0) != 0:
             raise WattsApiError(f"GET {path} API error: {body}")
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            _LOGGER.debug(
+                "GET %s response body:\n%s",
+                path,
+                json.dumps(body["body"], indent=2),
+            )
         return body["body"]
 
     async def _patch(self, path: str, payload: dict[str, Any]) -> Any:
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            _LOGGER.debug(
+                "PATCH %s payload:\n%s", path, json.dumps(payload, indent=2)
+            )
         resp = await self._session.patch(
             f"{API_BASE_URL}{path}",
             json=payload,
             headers=self._headers(),
         )
+        _LOGGER.debug("PATCH %s → HTTP %s", path, resp.status_code)
         if resp.status_code >= 400:
             raise WattsApiError(f"PATCH {path} failed: HTTP {resp.status_code}")
         body = resp.json()
