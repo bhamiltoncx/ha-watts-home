@@ -7,18 +7,14 @@ rules:
   brands: done
   common_modules: done
   config_flow: done
-  config_flow_test_coverage:
-    status: todo
-    comment: Config flow has no automated tests yet.
+  config_flow_test_coverage: done
   dependency_transparency: done
   docs_actions:
     status: exempt
     comment: No custom actions registered.
   docs_high_level_description: done
   docs_installation_instructions: done
-  docs_removal_instructions:
-    status: todo
-    comment: README does not yet describe how to remove the integration.
+  docs_removal_instructions: done
   entity_event_setup:
     status: exempt
     comment: Cloud polling only; no push events from the API.

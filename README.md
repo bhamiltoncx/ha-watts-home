@@ -42,6 +42,15 @@ Restart Home Assistant, then go to **Settings → Integrations → Add → Watts
 | Password | — | Your Watts Home account password |
 | Polling interval | 60 s | How often to poll the API (30–3600 s) |
 
+## Removal
+
+1. Go to **Settings → Integrations**, find **Watts Home**, and click **Delete**.
+2. Remove the component files (if manually installed):
+   ```bash
+   rm -rf /homeassistant/custom_components/watts_home
+   ```
+3. Restart Home Assistant.
+
 ## Credits
 
 Auth flow, API structure, and mode mappings ported from [creamy-waha](https://github.com/AlbinoDrought/creamy-waha) by [AlbinoDrought](https://github.com/AlbinoDrought), published under CC0 1.0 Universal.
