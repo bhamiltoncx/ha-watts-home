@@ -41,11 +41,11 @@ A single new file `custom_components/watts_home/models.py` holds all Pydantic v2
 models. Every model uses:
 
 ```python
-model_config = ConfigDict(extra="ignore", populate_by_name=True)
+model_config = ConfigDict(populate_by_name=True)
 ```
 
-`extra="ignore"` tolerates additive API changes (new fields, new firmware).
 `populate_by_name=True` allows construction by Python name in tests.
+Extra fields are ignored by default, tolerating additive API changes (new fields, new firmware).
 
 #### Model hierarchy
 
