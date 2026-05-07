@@ -27,6 +27,7 @@ from .const import (
     WATTS_TO_HA_MODE,
 )
 from .coordinator import WattsDataUpdateCoordinator
+from .models import WattsDevice
 
 # ---------------------------------------------------------------------------
 # Pure data-mapping helpers (no HA dependency — fully unit-testable)
@@ -49,118 +50,99 @@ _HA_ACTION_MAP: dict[str, HVACAction] = {
 }
 
 
-def device_hvac_modes(device: dict[str, Any]) -> list[HVACMode]:
-    mode = (device.get("data") or {}).get("Mode")
-    if mode is None:
+def device_hvac_modes(device: WattsDevice) -> list[HVACMode]:
+    if device.data is None or device.data.mode is None:
         return [HVACMode.OFF]
-    watts_enums: list[str] = mode["Enum"]
     return [
         _HA_MODE_MAP[ha]
-        for w in watts_enums
+        for w in device.data.mode.enum
         if (ha := WATTS_TO_HA_MODE.get(w)) is not None and ha in _HA_MODE_MAP
     ]
 
 
-def device_hvac_mode(device: dict[str, Any]) -> HVACMode:
-    mode = (device.get("data") or {}).get("Mode")
-    if mode is None:
+def device_hvac_mode(device: WattsDevice) -> HVACMode:
+    if device.data is None or device.data.mode is None:
         return HVACMode.OFF
-    ha = WATTS_TO_HA_MODE.get(mode["Val"], "off")
+    ha = WATTS_TO_HA_MODE.get(device.data.mode.val, "off")
     return _HA_MODE_MAP.get(ha, HVACMode.OFF)
 
 
-def device_hvac_action(device: dict[str, Any]) -> HVACAction | None:
-    state = (device.get("data") or {}).get("State")
-    if state is None:
+def device_hvac_action(device: WattsDevice) -> HVACAction | None:
+    if device.data is None or device.data.state is None:
         return None
-    op: str = state["Op"]
-    ha = WATTS_TO_HA_ACTION.get(op)
+    ha = WATTS_TO_HA_ACTION.get(device.data.state.op)
     if ha is None:
         return None
     return _HA_ACTION_MAP.get(ha)
 
 
-def device_current_temperature(device: dict[str, Any]) -> float | None:
-    sensors = (device.get("data") or {}).get("Sensors")
-    if sensors is None:
+def device_current_temperature(device: WattsDevice) -> float | None:
+    if device.data is None or device.data.sensors is None:
         return None
-    room = sensors.get("Room")
+    room = device.data.sensors.room
     if room is None:
         return None
-    if room.get("Status") == "Okay":
-        return float(room["Val"])
-    return None
+    return room.val if room.status == "Okay" else None
 
 
-def device_current_humidity(device: dict[str, Any]) -> float | None:
-    sensors = (device.get("data") or {}).get("Sensors")
-    if sensors is None:
+def device_current_humidity(device: WattsDevice) -> float | None:
+    if device.data is None or device.data.sensors is None:
         return None
-    rh = sensors.get("RH")
-    if rh and rh.get("Status") == "Okay":
-        return float(rh["Val"])
-    return None
+    rh = device.data.sensors.rh
+    return rh.val if rh and rh.status == "Okay" else None
 
 
-def device_target_temperature(device: dict[str, Any]) -> float | None:
+def device_target_temperature(device: WattsDevice) -> float | None:
     """Single setpoint — used in heat or cool mode."""
     mode = device_hvac_mode(device)
-    target = (device.get("data") or {}).get("Target")
-    if target is None:
+    if device.data is None or device.data.target is None:
         return None
     if mode == HVACMode.COOL:
-        v = target.get("Cool")
-        return float(v) if v is not None else None
-    return float(target["Heat"]) if target.get("Heat") is not None else None
+        return device.data.target.cool
+    return device.data.target.heat
 
 
-def device_target_temp_high(device: dict[str, Any]) -> float | None:
+def device_target_temp_high(device: WattsDevice) -> float | None:
     """Cool setpoint for heat_cool mode."""
-    target = (device.get("data") or {}).get("Target")
-    if target is None:
+    if device.data is None or device.data.target is None:
         return None
-    v = target.get("Cool")
-    return float(v) if v is not None else None
+    return device.data.target.cool
 
 
-def device_target_temp_low(device: dict[str, Any]) -> float | None:
+def device_target_temp_low(device: WattsDevice) -> float | None:
     """Heat setpoint for heat_cool mode."""
-    target = (device.get("data") or {}).get("Target")
-    if target is None:
+    if device.data is None or device.data.target is None:
         return None
-    v = target.get("Heat")
-    return float(v) if v is not None else None
+    return device.data.target.heat
 
 
-def device_temperature_unit(device: dict[str, Any]) -> str:
-    temp_units = (device.get("data") or {}).get("TempUnits")
-    if temp_units is None:
+def device_temperature_unit(device: WattsDevice) -> str:
+    if device.data is None or device.data.temp_units is None:
         return UnitOfTemperature.CELSIUS
-    val = temp_units["Val"]
-    return UnitOfTemperature.FAHRENHEIT if val == "F" else UnitOfTemperature.CELSIUS
+    return (
+        UnitOfTemperature.FAHRENHEIT
+        if device.data.temp_units.val == "F"
+        else UnitOfTemperature.CELSIUS
+    )
 
 
-def device_supported_features(device: dict[str, Any]) -> ClimateEntityFeature:
+def device_supported_features(device: WattsDevice) -> ClimateEntityFeature:
     features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.TURN_ON
         | ClimateEntityFeature.TURN_OFF
     )
-    modes = device_hvac_modes(device)
-    if HVACMode.HEAT_COOL in modes:
+    if HVACMode.HEAT_COOL in device_hvac_modes(device):
         features |= ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-    fan = (device.get("data") or {}).get("Fan")
-    if fan and fan.get("Enum"):
+    if device.data and device.data.fan and device.data.fan.enum:
         features |= ClimateEntityFeature.FAN_MODE
     return features
 
 
-def device_schedule_active(device: dict[str, Any]) -> bool:
-    sched = (device.get("data") or {}).get("SchedEnable")
-    if sched is None:
+def device_schedule_active(device: WattsDevice) -> bool:
+    if device.data is None or device.data.sched_enable is None:
         return False
-    val: str = sched["Val"]
-    return val.lower() in ("on", "enabled")
+    return device.data.sched_enable.val.lower() in ("on", "enabled")
 
 
 # ---------------------------------------------------------------------------

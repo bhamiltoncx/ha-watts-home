@@ -6,17 +6,18 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
-from typing import Any
 
 import pytest
 from homeassistant.components.climate import ClimateEntityFeature, HVACAction, HVACMode
 from homeassistant.const import UnitOfTemperature
 
+from custom_components.watts_home.models import WattsDevice
+
 _ROOT = Path(__file__).parent.parent / "custom_components" / "watts_home"
 _FIXTURE = Path(__file__).parent / "fixtures" / "devices.json"
 
 
-def _load(name: str, path: Path) -> Any:
+def _load(name: str, path: Path) -> object:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
@@ -42,14 +43,14 @@ device_schedule_active = _climate.device_schedule_active  # type: ignore[attr-de
 
 
 @pytest.fixture(scope="module")
-def devices() -> list[dict[str, Any]]:
-    raw = json.loads(_FIXTURE.read_text())
-    return list(raw["body"])  # type: ignore[return-value]
+def devices() -> list[WattsDevice]:
+    raw = json.loads(_FIXTURE.read_text())["body"]
+    return [WattsDevice.model_validate(d) for d in raw]
 
 
-def _by_model(devices: list[dict[str, Any]], model: str) -> dict[str, Any]:
+def _by_model(devices: list[WattsDevice], model: str) -> WattsDevice:
     for d in devices:
-        if d["modelNumber"] == model:
+        if d.model_number == model:
             return d
     raise KeyError(model)
 
@@ -60,7 +61,7 @@ def _by_model(devices: list[dict[str, Any]], model: str) -> dict[str, Any]:
 
 
 class TestModel561:
-    def test_hvac_modes(self, devices: list[dict[str, Any]]) -> None:
+    def test_hvac_modes(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         modes = device_hvac_modes(d)
         assert HVACMode.HEAT in modes
@@ -68,35 +69,35 @@ class TestModel561:
         assert HVACMode.COOL not in modes
         assert HVACMode.HEAT_COOL not in modes
 
-    def test_hvac_mode(self, devices: list[dict[str, Any]]) -> None:
+    def test_hvac_mode(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         assert device_hvac_mode(d) == HVACMode.HEAT
 
-    def test_hvac_action_heating(self, devices: list[dict[str, Any]]) -> None:
+    def test_hvac_action_heating(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         assert device_hvac_action(d) == HVACAction.HEATING
 
-    def test_current_temperature(self, devices: list[dict[str, Any]]) -> None:
+    def test_current_temperature(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         temp = device_current_temperature(d)
         assert temp is not None
         assert 40.0 <= temp <= 100.0
 
-    def test_no_humidity(self, devices: list[dict[str, Any]]) -> None:
+    def test_no_humidity(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         assert device_current_humidity(d) is None
 
-    def test_target_temperature(self, devices: list[dict[str, Any]]) -> None:
+    def test_target_temperature(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         temp = device_target_temperature(d)
         assert temp is not None
 
-    def test_temperature_unit_fahrenheit(self, devices: list[dict[str, Any]]) -> None:
+    def test_temperature_unit_fahrenheit(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         assert device_temperature_unit(d) == UnitOfTemperature.FAHRENHEIT
 
     def test_supported_features_no_fan_no_range(
-        self, devices: list[dict[str, Any]]
+        self, devices: list[WattsDevice]
     ) -> None:
         d = _by_model(devices, "561")
         feats = device_supported_features(d)
@@ -106,7 +107,7 @@ class TestModel561:
         assert not (feats & ClimateEntityFeature.FAN_MODE)
         assert not (feats & ClimateEntityFeature.TARGET_TEMPERATURE_RANGE)
 
-    def test_schedule_inactive(self, devices: list[dict[str, Any]]) -> None:
+    def test_schedule_inactive(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
         assert device_schedule_active(d) is False
 
@@ -117,7 +118,7 @@ class TestModel561:
 
 
 class TestModel562:
-    def test_hvac_modes_includes_auto(self, devices: list[dict[str, Any]]) -> None:
+    def test_hvac_modes_includes_auto(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "562")
         modes = device_hvac_modes(d)
         assert HVACMode.HEAT in modes
@@ -126,27 +127,25 @@ class TestModel562:
         assert HVACMode.OFF in modes
 
     def test_supported_features_has_fan_and_range(
-        self, devices: list[dict[str, Any]]
+        self, devices: list[WattsDevice]
     ) -> None:
         d = _by_model(devices, "562")
         feats = device_supported_features(d)
         assert feats & ClimateEntityFeature.FAN_MODE
         assert feats & ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
 
-    def test_target_temp_high_cool_sentinel(
-        self, devices: list[dict[str, Any]]
-    ) -> None:
+    def test_target_temp_high_cool_sentinel(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "562")
         # API returns 95 as "not configured" — we expose it as-is
         high = device_target_temp_high(d)
         assert high == 95.0
 
-    def test_target_temp_low_heat(self, devices: list[dict[str, Any]]) -> None:
+    def test_target_temp_low_heat(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "562")
         low = device_target_temp_low(d)
         assert low is not None
 
-    def test_hvac_action_off_or_idle(self, devices: list[dict[str, Any]]) -> None:
+    def test_hvac_action_off_or_idle(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "562")
         action = device_hvac_action(d)
         assert action in (
@@ -158,22 +157,22 @@ class TestModel562:
 
 
 # ---------------------------------------------------------------------------
-# Model 563 — same capabilities as 562
+# Model names
 # ---------------------------------------------------------------------------
 
 
 class TestModelNames:
-    def test_561_model_name(self, devices: list[dict[str, Any]]) -> None:
+    def test_561_model_name(self, devices: list[WattsDevice]) -> None:
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
 
         assert MODEL_NAMES["561"] == "Tekmar WiFi Thermostat 561"
 
-    def test_562_model_name(self, devices: list[dict[str, Any]]) -> None:
+    def test_562_model_name(self, devices: list[WattsDevice]) -> None:
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
 
         assert MODEL_NAMES["562"] == "Tekmar WiFi Thermostat 562"
 
-    def test_unknown_model_fallback(self, devices: list[dict[str, Any]]) -> None:
+    def test_unknown_model_fallback(self, devices: list[WattsDevice]) -> None:
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
 
         model_num = "999"
@@ -181,49 +180,57 @@ class TestModelNames:
         assert name == "Tekmar WiFi Thermostat 999"
 
 
+# ---------------------------------------------------------------------------
+# Model 563
+# ---------------------------------------------------------------------------
+
+
 class TestModel563:
-    def test_hvac_modes_includes_auto(self, devices: list[dict[str, Any]]) -> None:
+    def test_hvac_modes_includes_auto(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "563")
         modes = device_hvac_modes(d)
         assert HVACMode.HEAT_COOL in modes
 
-    def test_supported_features_has_fan(self, devices: list[dict[str, Any]]) -> None:
+    def test_supported_features_has_fan(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "563")
         feats = device_supported_features(d)
         assert feats & ClimateEntityFeature.FAN_MODE
 
 
 # ---------------------------------------------------------------------------
-# Null-data robustness — all nullable top-level fields set to None
+# Null-data robustness
 # ---------------------------------------------------------------------------
 
-_NULL_DEVICE: dict[str, Any] = {
-    "deviceId": "null-test",
-    "name": "Null Device",
-    "modelNumber": "561",
-    "isConnected": False,
-    "data": {
-        "Mode": None,
-        "State": None,
-        "Sensors": None,
-        "Target": None,
-        "TempUnits": None,
-        "SchedEnable": None,
-    },
-}
+_NULL_DEVICE: WattsDevice = WattsDevice.model_validate(
+    {
+        "deviceId": "null-test",
+        "name": "Null Device",
+        "modelNumber": "561",
+        "isConnected": False,
+        "data": {
+            "Mode": None,
+            "State": None,
+            "Sensors": None,
+            "Target": None,
+            "TempUnits": None,
+            "SchedEnable": None,
+        },
+    }
+)
 
-
-_NULL_DATA_FIELD_DEVICE: dict[str, Any] = {
-    "deviceId": "null-data-field-test",
-    "name": "Null Data Field Device",
-    "modelNumber": "561",
-    "isConnected": False,
-    "data": None,
-}
+_NULL_DATA_FIELD_DEVICE: WattsDevice = WattsDevice.model_validate(
+    {
+        "deviceId": "null-data-field-test",
+        "name": "Null Data Field Device",
+        "modelNumber": "561",
+        "isConnected": False,
+        "data": None,
+    }
+)
 
 
 class TestNullDataField:
-    """Guards against device['data'] itself being null (API returns this when device is offline)."""
+    """Guards against device.data itself being None."""
 
     def test_hvac_modes_returns_off(self) -> None:
         assert device_hvac_modes(_NULL_DATA_FIELD_DEVICE) == [HVACMode.OFF]
@@ -290,8 +297,6 @@ class TestNullData:
         assert device_target_temp_low(_NULL_DEVICE) is None
 
     def test_temperature_unit_returns_celsius_default(self) -> None:
-        from homeassistant.const import UnitOfTemperature
-
         assert device_temperature_unit(_NULL_DEVICE) == UnitOfTemperature.CELSIUS
 
     def test_supported_features_does_not_raise(self) -> None:
