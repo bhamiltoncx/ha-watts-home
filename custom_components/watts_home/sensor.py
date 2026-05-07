@@ -2,22 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature, PERCENTAGE
-from homeassistant.core import HomeAssistant
+from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, MODEL_NAMES
 from .coordinator import WattsDataUpdateCoordinator
+from .models import WattsDevice
 
 
 async def async_setup_entry(
@@ -26,22 +25,36 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator: WattsDataUpdateCoordinator = entry.runtime_data
-    entities: list[SensorEntity] = []
-    for device in coordinator.data:
-        sensors = (device.get("data") or {}).get("Sensors") or {}
-        if sensors.get("Outdoor", {}).get("Status") == "Okay":
-            entities.append(WattsOutdoorTempSensor(coordinator, device))
-        if sensors.get("RH", {}).get("Status") == "Okay":
-            entities.append(WattsHumiditySensor(coordinator, device))
-    async_add_entities(entities)
+    known_entity_ids: set[str] = set()
+
+    @callback
+    def _async_add_new() -> None:
+        new: list[SensorEntity] = []
+        for device_id, device in coordinator.data.items():
+            s = device.data.sensors if device.data else None
+            if s and s.outdoor and s.outdoor.status == "Okay":
+                uid = f"{device_id}_outdoor_temp"
+                if uid not in known_entity_ids:
+                    known_entity_ids.add(uid)
+                    new.append(WattsOutdoorTempSensor(coordinator, device_id))
+            if s and s.rh and s.rh.status == "Okay":
+                uid = f"{device_id}_humidity"
+                if uid not in known_entity_ids:
+                    known_entity_ids.add(uid)
+                    new.append(WattsHumiditySensor(coordinator, device_id))
+        if new:
+            async_add_entities(new)
+
+    entry.async_on_unload(coordinator.async_add_listener(_async_add_new))
+    _async_add_new()
 
 
-def _device_info(device: dict[str, Any]) -> DeviceInfo:
+def _device_info(device: WattsDevice) -> DeviceInfo:
     return DeviceInfo(
-        identifiers={(DOMAIN, device["deviceId"])},
-        name=device["name"],
+        identifiers={(DOMAIN, device.device_id)},
+        name=device.name,
         model=MODEL_NAMES.get(
-            device["modelNumber"], f"Tekmar WiFi Thermostat {device['modelNumber']}"
+            device.model_number, f"Tekmar WiFi Thermostat {device.model_number}"
         ),
         manufacturer="Watts Home",
     )
@@ -60,22 +73,24 @@ class WattsOutdoorTempSensor(
     def __init__(
         self,
         coordinator: WattsDataUpdateCoordinator,
-        device: dict[str, Any],
+        device_id: str,
     ) -> None:
         super().__init__(coordinator)
-        self._device_id: str = device["deviceId"]
-        self._attr_unique_id = f"{self._device_id}_outdoor_temp"
+        self._device_id = device_id
+        self._attr_unique_id = f"{device_id}_outdoor_temp"
+        device = coordinator.data[device_id]
         self._attr_device_info = _device_info(device)
-        unit = ((device.get("data") or {}).get("TempUnits") or {}).get("Val")
+        unit = (
+            device.data.temp_units.val
+            if device.data and device.data.temp_units
+            else None
+        )
         self._attr_native_unit_of_measurement = (
             UnitOfTemperature.FAHRENHEIT if unit == "F" else UnitOfTemperature.CELSIUS
         )
 
-    def _device(self) -> dict[str, Any]:
-        for d in self.coordinator.data:
-            if d["deviceId"] == self._device_id:
-                return d
-        raise KeyError(self._device_id)
+    def _device(self) -> WattsDevice:
+        return self.coordinator.data[self._device_id]  # KeyError → available=False
 
     @property
     def available(self) -> bool:
@@ -83,20 +98,22 @@ class WattsOutdoorTempSensor(
             return False
         try:
             d = self._device()
-            sensors = (d.get("data") or {}).get("Sensors") or {}
+            s = d.data.sensors if d.data else None
             return (
-                bool(d["isConnected"])
-                and sensors.get("Outdoor", {}).get("Status") == "Okay"
+                d.is_connected
+                and s is not None
+                and s.outdoor is not None
+                and s.outdoor.status == "Okay"
             )
         except KeyError:
             return False
 
     @property
     def native_value(self) -> float | None:
-        sensors = (self._device().get("data") or {}).get("Sensors") or {}
-        outdoor = sensors.get("Outdoor", {})
-        if outdoor.get("Status") == "Okay":
-            return float(outdoor["Val"])
+        d = self._device()
+        s = d.data.sensors if d.data else None
+        if s and s.outdoor and s.outdoor.status == "Okay":
+            return s.outdoor.val
         return None
 
 
@@ -112,18 +129,15 @@ class WattsHumiditySensor(CoordinatorEntity[WattsDataUpdateCoordinator], SensorE
     def __init__(
         self,
         coordinator: WattsDataUpdateCoordinator,
-        device: dict[str, Any],
+        device_id: str,
     ) -> None:
         super().__init__(coordinator)
-        self._device_id: str = device["deviceId"]
-        self._attr_unique_id = f"{self._device_id}_humidity"
-        self._attr_device_info = _device_info(device)
+        self._device_id = device_id
+        self._attr_unique_id = f"{device_id}_humidity"
+        self._attr_device_info = _device_info(coordinator.data[device_id])
 
-    def _device(self) -> dict[str, Any]:
-        for d in self.coordinator.data:
-            if d["deviceId"] == self._device_id:
-                return d
-        raise KeyError(self._device_id)
+    def _device(self) -> WattsDevice:
+        return self.coordinator.data[self._device_id]  # KeyError → available=False
 
     @property
     def available(self) -> bool:
@@ -131,17 +145,20 @@ class WattsHumiditySensor(CoordinatorEntity[WattsDataUpdateCoordinator], SensorE
             return False
         try:
             d = self._device()
-            sensors = (d.get("data") or {}).get("Sensors") or {}
+            s = d.data.sensors if d.data else None
             return (
-                bool(d["isConnected"]) and sensors.get("RH", {}).get("Status") == "Okay"
+                d.is_connected
+                and s is not None
+                and s.rh is not None
+                and s.rh.status == "Okay"
             )
         except KeyError:
             return False
 
     @property
     def native_value(self) -> float | None:
-        sensors = (self._device().get("data") or {}).get("Sensors") or {}
-        rh = sensors.get("RH", {})
-        if rh.get("Status") == "Okay":
-            return float(rh["Val"])
+        d = self._device()
+        s = d.data.sensors if d.data else None
+        if s and s.rh and s.rh.status == "Okay":
+            return s.rh.val
         return None

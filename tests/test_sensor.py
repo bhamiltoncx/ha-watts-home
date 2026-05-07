@@ -2,142 +2,150 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
 from pathlib import Path
-from typing import Any
 
 import pytest
 
-_ROOT = Path(__file__).parent.parent / "custom_components" / "watts_home"
+from custom_components.watts_home.models import WattsDevice
+
 _FIXTURE = Path(__file__).parent / "fixtures" / "devices.json"
 
 
-def _load(name: str, path: Path) -> Any:
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    return mod
-
-
-_const = _load("custom_components.watts_home.const", _ROOT / "const.py")
-_sensor_mod = _load("custom_components.watts_home.sensor", _ROOT / "sensor.py")
-
-
 @pytest.fixture(scope="module")
-def devices() -> list[dict[str, Any]]:
-    raw = json.loads(_FIXTURE.read_text())
-    return list(raw["body"])  # type: ignore[return-value]
+def devices() -> list[WattsDevice]:
+    raw = json.loads(_FIXTURE.read_text())["body"]
+    return [WattsDevice.model_validate(d) for d in raw]
 
 
-def _by_model(devices: list[dict[str, Any]], model: str) -> dict[str, Any]:
+def _by_model(devices: list[WattsDevice], model: str) -> WattsDevice:
     for d in devices:
-        if d["modelNumber"] == model:
+        if d.model_number == model:
             return d
     raise KeyError(model)
 
 
-def _by_name(devices: list[dict[str, Any]], name: str) -> dict[str, Any]:
+def _by_name(devices: list[WattsDevice], name: str) -> WattsDevice:
     for d in devices:
-        if d["name"] == name:
+        if d.name == name:
             return d
     raise KeyError(name)
 
 
 class TestOutdoorSensorEligibility:
-    def test_562_has_outdoor_okay(self, devices: list[dict[str, Any]]) -> None:
+    def test_562_has_outdoor_okay(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "562")
-        outdoor = d["data"]["Sensors"]["Outdoor"]
-        assert outdoor["Status"] == "Okay"
+        assert d.data is not None
+        assert d.data.sensors is not None
+        assert d.data.sensors.outdoor is not None
+        assert d.data.sensors.outdoor.status == "Okay"
 
-    def test_561_outdoor_absent(self, devices: list[dict[str, Any]]) -> None:
+    def test_561_outdoor_absent(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
-        outdoor = d["data"]["Sensors"]["Outdoor"]
-        assert outdoor["Status"] != "Okay"
+        assert d.data is not None
+        assert d.data.sensors is not None
+        outdoor = d.data.sensors.outdoor
+        assert outdoor is None or outdoor.status != "Okay"
 
-    def test_563_has_outdoor_okay(self, devices: list[dict[str, Any]]) -> None:
+    def test_563_has_outdoor_okay(self, devices: list[WattsDevice]) -> None:
         d = _by_name(devices, "Living")
-        outdoor = d["data"]["Sensors"]["Outdoor"]
-        assert outdoor["Status"] == "Okay"
+        assert d.data is not None
+        assert d.data.sensors is not None
+        assert d.data.sensors.outdoor is not None
+        assert d.data.sensors.outdoor.status == "Okay"
 
 
 class TestHumiditySensorEligibility:
-    def test_563_living_has_rh_okay(self, devices: list[dict[str, Any]]) -> None:
+    def test_563_living_has_rh_okay(self, devices: list[WattsDevice]) -> None:
         d = _by_name(devices, "Living")
-        rh = d["data"]["Sensors"]["RH"]
-        assert rh["Status"] == "Okay"
-        assert isinstance(rh["Val"], (int, float))
+        assert d.data is not None
+        assert d.data.sensors is not None
+        rh = d.data.sensors.rh
+        assert rh is not None
+        assert rh.status == "Okay"
+        assert isinstance(rh.val, float)
 
-    def test_562_no_rh_okay(self, devices: list[dict[str, Any]]) -> None:
+    def test_562_no_rh_okay(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "562")
-        rh = d["data"]["Sensors"].get("RH", {})
-        # Either absent or not Okay
-        assert rh.get("Status") != "Okay"
+        assert d.data is not None
+        assert d.data.sensors is not None
+        rh = d.data.sensors.rh
+        assert rh is None or rh.status != "Okay"
 
-    def test_561_no_rh(self, devices: list[dict[str, Any]]) -> None:
+    def test_561_no_rh(self, devices: list[WattsDevice]) -> None:
         d = _by_model(devices, "561")
-        rh = d["data"]["Sensors"].get("RH", {})
-        assert rh.get("Status") != "Okay"
+        assert d.data is not None
+        assert d.data.sensors is not None
+        rh = d.data.sensors.rh
+        assert rh is None or rh.status != "Okay"
 
 
 class TestSensorCounts:
     """Verify the expected number of sensor entities created from the fixture."""
 
-    def test_outdoor_sensor_count(self, devices: list[dict[str, Any]]) -> None:
+    def test_outdoor_sensor_count(self, devices: list[WattsDevice]) -> None:
         outdoor_count = sum(
             1
             for d in devices
-            if d["data"]["Sensors"].get("Outdoor", {}).get("Status") == "Okay"
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.outdoor
+            and d.data.sensors.outdoor.status == "Okay"
         )
         # From fixture: 4 devices (3x562, 1x563) have Outdoor Status=Okay
         assert outdoor_count == 4
 
-    def test_humidity_sensor_count(self, devices: list[dict[str, Any]]) -> None:
+    def test_humidity_sensor_count(self, devices: list[WattsDevice]) -> None:
         rh_count = sum(
             1
             for d in devices
-            if d["data"]["Sensors"].get("RH", {}).get("Status") == "Okay"
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.rh
+            and d.data.sensors.rh.status == "Okay"
         )
         # From fixture: only "Living" (563) has RH Status=Okay
         assert rh_count == 1
 
 
-_NULL_DATA_FIELD_DEVICE: dict[str, Any] = {
-    "deviceId": "null-data-field",
-    "name": "Null Data Field Device",
-    "modelNumber": "561",
-    "isConnected": False,
-    "data": None,
-}
+_NULL_DATA_FIELD_DEVICE: WattsDevice = WattsDevice.model_validate(
+    {
+        "deviceId": "null-data-field",
+        "name": "Null Data Field Device",
+        "modelNumber": "561",
+        "isConnected": False,
+        "data": None,
+    }
+)
 
 
 class TestNullDataSensor:
-    """Guards against device['data'] being null in sensor setup and entity methods."""
+    """Guards against device.data being None in sensor setup and entity methods."""
 
     def test_outdoor_eligibility_skips_null_data_device(
-        self, devices: list[dict[str, Any]]
+        self, devices: list[WattsDevice]
     ) -> None:
-        """async_setup_entry must not crash when a device has data=null."""
         all_devices = [*devices, _NULL_DATA_FIELD_DEVICE]
         outdoor_count = sum(
             1
             for d in all_devices
-            if (d.get("data") or {}).get("Sensors", {}).get("Outdoor", {}).get("Status")
-            == "Okay"
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.outdoor
+            and d.data.sensors.outdoor.status == "Okay"
         )
         assert outdoor_count == 4
 
     def test_rh_eligibility_skips_null_data_device(
-        self, devices: list[dict[str, Any]]
+        self, devices: list[WattsDevice]
     ) -> None:
         all_devices = [*devices, _NULL_DATA_FIELD_DEVICE]
         rh_count = sum(
             1
             for d in all_devices
-            if (d.get("data") or {}).get("Sensors", {}).get("RH", {}).get("Status")
-            == "Okay"
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.rh
+            and d.data.sensors.rh.status == "Okay"
         )
         assert rh_count == 1
