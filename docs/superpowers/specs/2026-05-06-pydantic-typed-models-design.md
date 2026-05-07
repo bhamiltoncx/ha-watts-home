@@ -41,11 +41,12 @@ A single new file `custom_components/watts_home/models.py` holds all Pydantic v2
 models. Every model uses:
 
 ```python
-model_config = ConfigDict(populate_by_name=True)
+model_config = ConfigDict()
 ```
 
-`populate_by_name=True` allows construction by Python name in tests.
 Extra fields are ignored by default, tolerating additive API changes (new fields, new firmware).
+Test objects are constructed via `model_validate({"deviceId": "x", ..., "data": None})` using
+the API's own keys — no need for `populate_by_name` / `validate_by_name`.
 
 #### Model hierarchy
 
@@ -244,7 +245,7 @@ _async_add_new()
   fields; confirms `data=null` parses to `WattsDevice(data=None)` without error.
 - `tests/test_climate.py`: fixture helpers change from raw dicts to
   `WattsDevice` instances. `_NULL_DEVICE` and `_NULL_DATA_FIELD_DEVICE` become
-  `WattsDevice(device_id="x", ..., data=None)` constructed directly.
+  `WattsDevice.model_validate({"deviceId": "x", ..., "data": None})`.
 - `tests/test_sensor.py`: same pattern.
 - `pydantic` is already bundled with Home Assistant; no change to `manifest.json`
   requirements.
