@@ -7,8 +7,10 @@ import logging
 from typing import Any
 
 from curl_cffi.requests import AsyncSession
+from pydantic import ValidationError
 
 from .const import API_BASE_URL, BROWSER_UA
+from .models import WattsDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,11 +75,19 @@ class WattsApiClient:
         result: list[dict[str, Any]] = await self._get("/Location")
         return result
 
-    async def get_devices(self, location_id: str) -> list[dict[str, Any]]:
-        result: list[dict[str, Any]] = await self._get(
-            f"/Location/{location_id}/Devices"
-        )
-        return result
+    async def get_devices(self, location_id: str) -> list[WattsDevice]:
+        raw: list[dict] = await self._get(f"/Location/{location_id}/Devices")
+        devices: list[WattsDevice] = []
+        for item in raw:
+            try:
+                devices.append(WattsDevice.model_validate(item))
+            except ValidationError as exc:
+                _LOGGER.error(
+                    "Device %s failed Pydantic validation, marking unavailable: %s",
+                    item.get("deviceId"),
+                    exc,
+                )
+        return devices
 
     async def set_mode(self, device_id: str, watts_mode: str) -> None:
         await self._patch(f"/Device/{device_id}", {"Settings": {"Mode": watts_mode}})

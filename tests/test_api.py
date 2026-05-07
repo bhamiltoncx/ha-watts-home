@@ -27,6 +27,7 @@ def _load(name: str, path: Path) -> object:
 
 _const = _load("custom_components.watts_home.const", _ROOT / "const.py")
 _auth_mod = _load("custom_components.watts_home.auth", _ROOT / "auth.py")
+_models_mod = _load("custom_components.watts_home.models", _ROOT / "models.py")
 _api_mod = _load("custom_components.watts_home.api", _ROOT / "api.py")
 
 WattsAuth = _auth_mod.WattsAuth  # type: ignore[attr-defined]
