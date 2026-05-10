@@ -126,6 +126,24 @@ def device_temperature_unit(device: WattsDevice) -> str:
     )
 
 
+def device_target_humidity(device: WattsDevice) -> float | None:
+    if device.data is None or device.data.hum is None:
+        return None
+    return device.data.hum.val
+
+
+def device_min_humidity(device: WattsDevice) -> float:
+    if device.data is None or device.data.hum is None:
+        return 0.0
+    return device.data.hum.min
+
+
+def device_max_humidity(device: WattsDevice) -> float:
+    if device.data is None or device.data.hum is None:
+        return 100.0
+    return device.data.hum.max
+
+
 def device_supported_features(device: WattsDevice) -> ClimateEntityFeature:
     features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
@@ -136,6 +154,8 @@ def device_supported_features(device: WattsDevice) -> ClimateEntityFeature:
         features |= ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
     if device.data and device.data.fan and device.data.fan.enum:
         features |= ClimateEntityFeature.FAN_MODE
+    if device.data and device.data.hum is not None:
+        features |= ClimateEntityFeature.TARGET_HUMIDITY
     return features
 
 
@@ -282,6 +302,18 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         return d.data.fan.enum if d.data and d.data.fan else None
 
     @property
+    def target_humidity(self) -> float | None:
+        return device_target_humidity(self._device())
+
+    @property
+    def min_humidity(self) -> float:
+        return device_min_humidity(self._device())
+
+    @property
+    def max_humidity(self) -> float:
+        return device_max_humidity(self._device())
+
+    @property
     def supported_features(self) -> ClimateEntityFeature:
         return device_supported_features(self._device())
 
@@ -319,4 +351,9 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         client = await self.coordinator.async_get_client()
         await client.set_fan_mode(self._device_id, fan_mode)
+        await self.coordinator.async_request_refresh()
+
+    async def async_set_humidity(self, humidity: int) -> None:
+        client = await self.coordinator.async_get_client()
+        await client.set_humidity_setpoint(self._device_id, float(humidity))
         await self.coordinator.async_request_refresh()

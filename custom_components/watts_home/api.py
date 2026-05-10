@@ -95,6 +95,12 @@ class WattsApiClient:
     async def set_fan_mode(self, device_id: str, fan_mode: str) -> None:
         await self._patch(f"/Device/{device_id}", {"Settings": {"Fan": fan_mode}})
 
+    async def set_humidity_setpoint(self, device_id: str, humidity: float) -> None:
+        await self._patch(f"/Device/{device_id}", {"Settings": {"Hum": humidity}})
+
+    async def set_dehumidity_setpoint(self, device_id: str, dehum: float) -> None:
+        await self._patch(f"/Device/{device_id}", {"Settings": {"Dehum": dehum}})
+
     async def set_temperature(
         self,
         device_id: str,

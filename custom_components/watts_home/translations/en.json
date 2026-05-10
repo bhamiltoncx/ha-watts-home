@@ -1,5 +1,10 @@
 {
   "entity": {
+    "number": {
+      "dehumidifier_setpoint": {
+        "name": "Dehumidifier Setpoint"
+      }
+    },
     "sensor": {
       "temperature": {
         "name": "Temperature"

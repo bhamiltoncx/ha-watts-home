@@ -47,6 +47,13 @@ class WattsSchedEnable(BaseModel):
     val: str = Field(alias="Val")
 
 
+class WattsHumControl(BaseModel):
+    val: float = Field(alias="Val")
+    min: float = Field(alias="Min")
+    max: float = Field(alias="Max")
+    steps: float = Field(alias="Steps")
+
+
 class WattsDeviceData(BaseModel):
     sensors: WattsSensors | None = Field(None, alias="Sensors")
     state: WattsState | None = Field(None, alias="State")
@@ -55,6 +62,8 @@ class WattsDeviceData(BaseModel):
     temp_units: WattsTempUnits | None = Field(None, alias="TempUnits")
     sched_enable: WattsSchedEnable | None = Field(None, alias="SchedEnable")
     fan: WattsFan | None = Field(None, alias="Fan")
+    hum: WattsHumControl | None = Field(None, alias="Hum")
+    dehum: WattsHumControl | None = Field(None, alias="Dehum")
 
 
 class WattsDevice(BaseModel):
