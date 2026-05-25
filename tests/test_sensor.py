@@ -92,8 +92,8 @@ class TestSensorCounts:
             and d.data.sensors.outdoor
             and d.data.sensors.outdoor.status == "Okay"
         )
-        # From fixture: 4 devices (3x562, 1x563) have Outdoor Status=Okay
-        assert outdoor_count == 4
+        # From fixture: 4 original + 1 Radiant Room = 5
+        assert outdoor_count == 5
 
     def test_humidity_sensor_count(self, devices: list[WattsDevice]) -> None:
         rh_count = sum(
@@ -104,8 +104,44 @@ class TestSensorCounts:
             and d.data.sensors.rh
             and d.data.sensors.rh.status == "Okay"
         )
-        # From fixture: only "Living" (563) has RH Status=Okay
-        assert rh_count == 1
+        # From fixture: Living + Radiant Room = 2
+        assert rh_count == 2
+
+    def test_floor_sensor_count(self, devices: list[WattsDevice]) -> None:
+        floor_count = sum(
+            1
+            for d in devices
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.floor
+            and d.data.sensors.floor.status == "Okay"
+        )
+        # Only Radiant Room has Floor Status=Okay
+        assert floor_count == 1
+
+    def test_energy_heat_sensor_count(self, devices: list[WattsDevice]) -> None:
+        count = sum(
+            1
+            for d in devices
+            if d.data
+            and d.data.energy
+            and d.data.energy.heat
+            and d.data.energy.heat.daily
+        )
+        # All 12 devices have Energy.Heat.Daily
+        assert count == len(devices)
+
+    def test_energy_cool_sensor_count(self, devices: list[WattsDevice]) -> None:
+        count = sum(
+            1
+            for d in devices
+            if d.data
+            and d.data.energy
+            and d.data.energy.cool
+            and d.data.energy.cool.daily
+        )
+        # Only 562/563 devices have Energy.Cool.Daily (4 devices)
+        assert count >= 4
 
 
 _NULL_DATA_FIELD_DEVICE: WattsDevice = WattsDevice.model_validate(
@@ -134,7 +170,8 @@ class TestNullDataSensor:
             and d.data.sensors.outdoor
             and d.data.sensors.outdoor.status == "Okay"
         )
-        assert outdoor_count == 4
+        # 5 from fixture + 0 from null device
+        assert outdoor_count == 5
 
     def test_rh_eligibility_skips_null_data_device(
         self, devices: list[WattsDevice]
@@ -148,4 +185,5 @@ class TestNullDataSensor:
             and d.data.sensors.rh
             and d.data.sensors.rh.status == "Okay"
         )
-        assert rh_count == 1
+        # 2 from fixture + 0 from null device
+        assert rh_count == 2
