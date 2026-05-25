@@ -6,6 +6,50 @@
       },
       "humidity": {
         "name": "Humidity"
+      },
+      "floor_temperature": {
+        "name": "Floor Temperature"
+      },
+      "floor_max": {
+        "name": "Floor Max"
+      },
+      "energy_heat_today": {
+        "name": "Heat Today"
+      },
+      "energy_cool_today": {
+        "name": "Cool Today"
+      }
+    },
+    "binary_sensor": {
+      "fan_running": {
+        "name": "Fan Running"
+      },
+      "radiant_heating": {
+        "name": "Radiant Heating"
+      },
+      "humidifier_running": {
+        "name": "Humidifier Running"
+      },
+      "cold_weather_shutdown": {
+        "name": "Cold Weather Shutdown"
+      }
+    },
+    "humidifier": {
+      "humidifier": {
+        "name": "Humidifier"
+      }
+    },
+    "number": {
+      "floor_min": {
+        "name": "Floor Min"
+      }
+    },
+    "switch": {
+      "away": {
+        "name": "Away"
+      },
+      "emergency_heat": {
+        "name": "Emergency Heat"
       }
     }
   },
