@@ -55,6 +55,25 @@ class TestOutdoorSensorEligibility:
         assert d.data.sensors.outdoor.status == "Okay"
 
 
+class TestRoomTempSensorEligibility:
+    def test_562_has_room_okay(self, devices: list[WattsDevice]) -> None:
+        d = _by_name(devices, "Primary Bedroom")
+        assert d.data is not None
+        assert d.data.sensors is not None
+        room = d.data.sensors.room
+        assert room is not None
+        assert room.status == "Okay"
+        assert isinstance(room.val, float)
+
+    def test_561_has_room_okay(self, devices: list[WattsDevice]) -> None:
+        d = _by_name(devices, "Office")
+        assert d.data is not None
+        assert d.data.sensors is not None
+        room = d.data.sensors.room
+        assert room is not None
+        assert room.status == "Okay"
+
+
 class TestHumiditySensorEligibility:
     def test_563_living_has_rh_okay(self, devices: list[WattsDevice]) -> None:
         d = _by_name(devices, "Living")
@@ -82,6 +101,18 @@ class TestHumiditySensorEligibility:
 
 class TestSensorCounts:
     """Verify the expected number of sensor entities created from the fixture."""
+
+    def test_room_temp_sensor_count(self, devices: list[WattsDevice]) -> None:
+        room_count = sum(
+            1
+            for d in devices
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.room
+            and d.data.sensors.room.status == "Okay"
+        )
+        # From fixture: all 11 devices have Room Status=Okay
+        assert room_count == 11
 
     def test_outdoor_sensor_count(self, devices: list[WattsDevice]) -> None:
         outdoor_count = sum(
@@ -135,6 +166,20 @@ class TestNullDataSensor:
             and d.data.sensors.outdoor.status == "Okay"
         )
         assert outdoor_count == 4
+
+    def test_room_eligibility_skips_null_data_device(
+        self, devices: list[WattsDevice]
+    ) -> None:
+        all_devices = [*devices, _NULL_DATA_FIELD_DEVICE]
+        room_count = sum(
+            1
+            for d in all_devices
+            if d.data
+            and d.data.sensors
+            and d.data.sensors.room
+            and d.data.sensors.room.status == "Okay"
+        )
+        assert room_count == 11
 
     def test_rh_eligibility_skips_null_data_device(
         self, devices: list[WattsDevice]

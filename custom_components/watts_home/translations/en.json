@@ -1,6 +1,9 @@
 {
   "entity": {
     "sensor": {
+      "temperature": {
+        "name": "Temperature"
+      },
       "outdoor_temperature": {
         "name": "Outdoor Temperature"
       },
