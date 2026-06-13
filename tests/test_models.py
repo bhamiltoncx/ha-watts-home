@@ -77,6 +77,27 @@ def test_null_data_subfields_parse_without_error() -> None:
     assert device.data.target is None
 
 
+def test_target_without_range_fields_parses() -> None:
+    """SnowMelt controls (e.g. Tekmar 671) return Target without Min/Max/Steps."""
+    device = WattsDevice.model_validate(
+        {
+            "deviceId": "snowmelt-1",
+            "name": "Driveway",
+            "modelNumber": "671",
+            "isConnected": True,
+            "data": {
+                "Target": {"Heat": 38.0},
+            },
+        }
+    )
+    assert device.data is not None
+    assert device.data.target is not None
+    assert device.data.target.heat == 38.0
+    assert device.data.target.min is None
+    assert device.data.target.max is None
+    assert device.data.target.steps is None
+
+
 def test_full_device_fields_round_trip() -> None:
     """A device with every sub-field present parses to the right values."""
     device = WattsDevice.model_validate(

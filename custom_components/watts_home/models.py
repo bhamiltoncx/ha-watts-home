@@ -29,9 +29,9 @@ class WattsMode(BaseModel):
 class WattsTarget(BaseModel):
     heat: float | None = Field(None, alias="Heat")
     cool: float | None = Field(None, alias="Cool")
-    min: float = Field(alias="Min")
-    max: float = Field(alias="Max")
-    steps: float = Field(alias="Steps")
+    min: float | None = Field(None, alias="Min")
+    max: float | None = Field(None, alias="Max")
+    steps: float | None = Field(None, alias="Steps")
 
 
 class WattsTempUnits(BaseModel):
