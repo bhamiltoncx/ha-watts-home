@@ -156,3 +156,66 @@ def test_full_device_fields_round_trip() -> None:
     assert device.data.fan.enum == ["Auto", "On"]
     assert device.data.sched_enable is not None
     assert device.data.sched_enable.val == "Off"
+
+
+def test_new_fields_parse_from_fixture() -> None:
+    """Verify the synthetic Radiant Room device with all new fields."""
+    raw = _raw_devices()
+    radiant = [d for d in raw if d["name"] == "Radiant Room"]
+    assert len(radiant) == 1
+    device = WattsDevice.model_validate(radiant[0])
+
+    # State.Sub
+    assert device.data.state.sub == "CWSD"
+
+    # Fan.Active + Fan.Relay
+    assert device.data.fan.active == 1
+    assert device.data.fan.relay == 1
+
+    # Hum
+    assert device.data.hum is not None
+    assert device.data.hum.active == 1
+    assert device.data.hum.val == 34
+    assert device.data.hum.min == 10
+    assert device.data.hum.max == 80
+
+    # Schedule + Floor
+    assert device.data.schedule is not None
+    assert device.data.schedule.floor_active == 1
+    assert device.data.schedule.floor is not None
+    assert device.data.schedule.floor.w == 67.0
+    assert device.data.schedule.floor.a == 60.0
+    assert device.data.schedule.floor_min == 40
+    assert device.data.schedule.floor_max == 85
+
+    # Energy
+    assert device.data.energy is not None
+    assert device.data.energy.heat is not None
+    assert device.data.energy.heat.daily[-1] == 1.2
+    assert device.data.energy.cool is not None
+    assert device.data.energy.cool.daily[-1] == 0.0
+
+    # Location
+    assert device.location is not None
+    assert device.location.location_id == "00000000-0000-0000-0000-000000000002"
+    assert device.location.away_state == 0
+
+
+def test_561_no_hum_schedule_energy_defaults() -> None:
+    """Verify 561 devices without Hum/Schedule still parse, fields are None."""
+    raw = _raw_devices()
+    bart = [d for d in raw if d["name"] == "Bart's Room"]
+    assert len(bart) == 1
+    device = WattsDevice.model_validate(bart[0])
+    assert device.data.hum is None
+    assert device.data.state.sub == "None"
+
+
+def test_state_sub_defaults_to_none() -> None:
+    device = WattsDevice.model_validate({
+        "deviceId": "t", "name": "T", "modelNumber": "561", "isConnected": True,
+        "data": {"State": {"Op": "Heat"}, "Mode": {"Val": "Heat", "Enum": ["Heat", "Off"]},
+                 "Target": {"Heat": 70, "Cool": 80, "Min": 40, "Max": 95, "Steps": 1},
+                 "TempUnits": {"Val": "F"}, "SchedEnable": {"Val": "Off"}},
+    })
+    assert device.data.state.sub == "None"

@@ -197,6 +197,39 @@ class TestModel563:
         assert feats & ClimateEntityFeature.FAN_MODE
 
 
+class TestEmergencyHeat:
+    """Emer mode is not a valid HVACMode — it should be filtered from modes
+    but not crash device_hvac_mode() when the device is in Emer."""
+
+    def test_emer_filtered_from_modes_list(self) -> None:
+        d = WattsDevice.model_validate({
+            "deviceId": "t", "name": "T", "modelNumber": "563", "isConnected": True,
+            "data": {
+                "Sensors": {"Room": {"Val": 70, "Status": "Okay"}},
+                "State": {"Op": "Heat"}, "Mode": {"Val": "Heat", "Enum": ["Off", "Heat", "Cool", "Auto", "Emer"]},
+                "Target": {"Heat": 70, "Cool": 80, "Min": 40, "Max": 95, "Steps": 1},
+                "TempUnits": {"Val": "F"}, "SchedEnable": {"Val": "Off"},
+            }
+        })
+        modes = device_hvac_modes(d)
+        # "Emer" maps to "emergency_heat" which has no HVACMode → filtered out
+        for m in modes:
+            assert isinstance(m, HVACMode)
+
+    def test_device_in_emer_mode_falls_back_to_heat(self) -> None:
+        d = WattsDevice.model_validate({
+            "deviceId": "t", "name": "T", "modelNumber": "563", "isConnected": True,
+            "data": {
+                "Sensors": {"Room": {"Val": 70, "Status": "Okay"}},
+                "State": {"Op": "Heat"}, "Mode": {"Val": "Emer", "Enum": ["Off", "Heat", "Emer"]},
+                "Target": {"Heat": 70, "Cool": 80, "Min": 40, "Max": 95, "Steps": 1},
+                "TempUnits": {"Val": "F"}, "SchedEnable": {"Val": "Off"},
+            }
+        })
+        mode = device_hvac_mode(d)
+        assert mode == HVACMode.HEAT
+
+
 # ---------------------------------------------------------------------------
 # Null-data robustness
 # ---------------------------------------------------------------------------

@@ -64,7 +64,8 @@ def device_hvac_mode(device: WattsDevice) -> HVACMode:
     if device.data is None or device.data.mode is None:
         return HVACMode.OFF
     ha = WATTS_TO_HA_MODE.get(device.data.mode.val, "off")
-    return _HA_MODE_MAP.get(ha, HVACMode.OFF)
+    # "Emer" maps to "emergency_heat" which has no HVACMode — fall back to HEAT
+    return _HA_MODE_MAP.get(ha, HVACMode.HEAT)
 
 
 def device_hvac_action(device: WattsDevice) -> HVACAction | None:
@@ -156,21 +157,37 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator: WattsDataUpdateCoordinator = entry.runtime_data
-    known_device_ids: set[str] = set()
+    known_entity_ids: set[str] = set()
 
     @callback
     def _async_add_new() -> None:
-        new = [
-            WattsClimateEntity(coordinator, device_id)
-            for device_id in coordinator.data
-            if device_id not in known_device_ids
-        ]
+        new: list[ClimateEntity] = []
+        for device_id, device in coordinator.data.items():
+            if device_id not in known_entity_ids:
+                known_entity_ids.add(device_id)
+                new.append(WattsClimateEntity(coordinator, device_id))
+
+            floor_uid = f"{device_id}_floor"
+            if floor_uid not in known_entity_ids and _has_floor(device):
+                known_entity_ids.add(floor_uid)
+                new.append(WattsFloorClimateEntity(coordinator, device_id))
+
         if new:
-            known_device_ids.update(e._device_id for e in new)
             async_add_entities(new)
 
     entry.async_on_unload(coordinator.async_add_listener(_async_add_new))
     _async_add_new()
+
+
+def _has_floor(device: WattsDevice) -> bool:
+    return (
+        device.data is not None
+        and device.data.sensors is not None
+        and device.data.sensors.floor is not None
+        and device.data.sensors.floor.status == "Okay"
+        and device.data.schedule is not None
+        and device.data.schedule.floor is not None
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -236,19 +253,19 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
 
     @property
     def target_temperature(self) -> float | None:
-        if HVACMode.HEAT_COOL in self.hvac_modes:
+        if self.hvac_mode == HVACMode.HEAT_COOL:
             return None
         return device_target_temperature(self._device())
 
     @property
     def target_temperature_high(self) -> float | None:
-        if HVACMode.HEAT_COOL not in self.hvac_modes:
+        if self.hvac_mode != HVACMode.HEAT_COOL:
             return None
         return device_target_temp_high(self._device())
 
     @property
     def target_temperature_low(self) -> float | None:
-        if HVACMode.HEAT_COOL not in self.hvac_modes:
+        if self.hvac_mode != HVACMode.HEAT_COOL:
             return None
         return device_target_temp_low(self._device())
 
@@ -289,6 +306,13 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         watts_mode = HA_TO_WATTS_MODE[hvac_mode]
         client = await self.coordinator.async_get_client()
         await client.set_mode(self._device_id, watts_mode)
+
+        def _update(d: WattsDevice) -> None:
+            if d.data and d.data.mode:
+                d.data.mode.val = watts_mode
+
+        self.coordinator.optimistic_update(self._device_id, _update)
+        await client.refresh_device(self._device_id)
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self) -> None:
@@ -304,19 +328,179 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         sched = device_schedule_active(device)
         client = await self.coordinator.async_get_client()
 
+        current_heat = device.data.target.heat if device.data and device.data.target and device.data.target.heat is not None else 40.0
+        current_cool = device.data.target.cool if device.data and device.data.target and device.data.target.cool is not None else 95.0
+
         if ATTR_TARGET_TEMP_HIGH in kwargs or ATTR_TARGET_TEMP_LOW in kwargs:
-            heat = kwargs.get(ATTR_TARGET_TEMP_LOW)
-            cool = kwargs.get(ATTR_TARGET_TEMP_HIGH)
+            heat = kwargs.get(ATTR_TARGET_TEMP_LOW, current_heat)
+            cool = kwargs.get(ATTR_TARGET_TEMP_HIGH, current_cool)
         else:
             temp = kwargs.get(ATTR_TEMPERATURE)
             mode = device_hvac_mode(device)
-            heat = temp if mode == HVACMode.HEAT else None
-            cool = temp if mode == HVACMode.COOL else None
+            if mode == HVACMode.COOL:
+                heat, cool = current_heat, temp
+            else:
+                heat, cool = temp, current_cool
+
+        def _update(d: WattsDevice) -> None:
+            if d.data and d.data.target:
+                d.data.target.heat = heat
+                d.data.target.cool = cool
 
         await client.set_temperature(self._device_id, sched, heat, cool)
+        self.coordinator.optimistic_update(self._device_id, _update)
+        await client.refresh_device(self._device_id)
         await self.coordinator.async_request_refresh()
 
     async def async_set_fan_mode(self, fan_mode: str) -> None:
         client = await self.coordinator.async_get_client()
         await client.set_fan_mode(self._device_id, fan_mode)
+
+        def _update(d: WattsDevice) -> None:
+            if d.data and d.data.fan:
+                d.data.fan.val = fan_mode
+
+        self.coordinator.optimistic_update(self._device_id, _update)
+        await client.refresh_device(self._device_id)
+        await self.coordinator.async_request_refresh()
+
+
+# ---------------------------------------------------------------------------
+# Floor heating climate entity
+# ---------------------------------------------------------------------------
+
+
+class WattsFloorClimateEntity(
+    CoordinatorEntity[WattsDataUpdateCoordinator], ClimateEntity
+):
+    """Heat-only climate entity for radiant floor heating.
+
+    Shows floor slab temperature and the occupied floor minimum
+    (Schedule.Floor.W) as the target. Set target to 0 to disable.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "floor"
+    _attr_hvac_modes = [HVACMode.HEAT]
+    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+
+    def __init__(
+        self, coordinator: WattsDataUpdateCoordinator, device_id: str
+    ) -> None:
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._attr_unique_id = f"{device_id}_floor"
+        device = coordinator.data[device_id]
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, device_id)},
+            name=device.name,
+            model=MODEL_NAMES.get(
+                device.model_number,
+                f"Tekmar WiFi Thermostat {device.model_number}",
+            ),
+            manufacturer="Watts Home",
+        )
+
+    def _device(self) -> WattsDevice:
+        return self.coordinator.data[self._device_id]
+
+    @property
+    def available(self) -> bool:
+        if not self.coordinator.last_update_success:
+            return False
+        try:
+            d = self._device()
+            s = d.data.sensors if d.data else None
+            return (
+                d.is_connected
+                and s is not None
+                and s.floor is not None
+                and s.floor.status == "Okay"
+            )
+        except KeyError:
+            return False
+
+    @property
+    def hvac_mode(self) -> HVACMode:
+        return HVACMode.HEAT
+
+    @property
+    def hvac_action(self) -> HVACAction:
+        d = self._device()
+        if (
+            d.data
+            and d.data.mode
+            and d.data.sensors
+            and d.data.sensors.floor
+            and d.data.schedule
+            and d.data.schedule.floor
+        ):
+            mode = d.data.mode.val
+            if mode not in ("Heat", "Auto", "Emer"):
+                return HVACAction.IDLE
+            target = d.data.schedule.floor.w
+            current = d.data.sensors.floor.val
+            if target > 0 and current < target:
+                return HVACAction.HEATING
+        return HVACAction.IDLE
+
+    @property
+    def current_temperature(self) -> float | None:
+        d = self._device()
+        if d.data and d.data.sensors and d.data.sensors.floor:
+            f = d.data.sensors.floor
+            return f.val if f.status == "Okay" else None
+        return None
+
+    @property
+    def target_temperature(self) -> float | None:
+        d = self._device()
+        if d.data and d.data.schedule and d.data.schedule.floor:
+            return d.data.schedule.floor.w
+        return None
+
+    @property
+    def min_temp(self) -> float:
+        return 0
+
+    @property
+    def max_temp(self) -> float:
+        d = self._device()
+        if d.data and d.data.schedule:
+            return d.data.schedule.floor_max
+        return 85.0
+
+    @property
+    def target_temperature_step(self) -> float:
+        return 1.0
+
+    @property
+    def temperature_unit(self) -> str:
+        d = self._device()
+        if d.data and d.data.temp_units and d.data.temp_units.val == "F":
+            return UnitOfTemperature.FAHRENHEIT
+        return UnitOfTemperature.CELSIUS
+
+    async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        pass
+
+    async def async_set_temperature(self, **kwargs: Any) -> None:
+        temp = kwargs.get(ATTR_TEMPERATURE)
+        if temp is None:
+            return
+
+        device = self._device()
+        current_a = 0.0
+        if device.data and device.data.schedule and device.data.schedule.floor:
+            current_a = device.data.schedule.floor.a
+
+        client = await self.coordinator.async_get_client()
+        await client.set_floor_min(self._device_id, temp, current_a)
+
+        def _update(d: WattsDevice) -> None:
+            if d.data and d.data.schedule and d.data.schedule.floor:
+                d.data.schedule.floor.w = temp
+
+        self.coordinator.optimistic_update(self._device_id, _update)
+        await client.refresh_device(self._device_id)
         await self.coordinator.async_request_refresh()

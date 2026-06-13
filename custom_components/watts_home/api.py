@@ -40,6 +40,9 @@ class WattsApiClient:
         _LOGGER.debug("GET %s → HTTP %s", path, resp.status_code)
         if resp.status_code >= 400:
             raise WattsApiError(f"GET {path} failed: HTTP {resp.status_code}")
+        text = resp.text.strip()
+        if not text:
+            return None
         body = resp.json()
         if body.get("errorNumber", 0) != 0:
             raise WattsApiError(f"GET {path} API error: {body}")
@@ -47,9 +50,9 @@ class WattsApiClient:
             _LOGGER.debug(
                 "GET %s response body:\n%s",
                 path,
-                json.dumps(body["body"], indent=2),
+                json.dumps(body.get("body"), indent=2),
             )
-        return body["body"]
+        return body.get("body")
 
     async def _patch(self, path: str, payload: dict[str, Any]) -> Any:
         if _LOGGER.isEnabledFor(logging.DEBUG):
@@ -62,6 +65,9 @@ class WattsApiClient:
         _LOGGER.debug("PATCH %s → HTTP %s", path, resp.status_code)
         if resp.status_code >= 400:
             raise WattsApiError(f"PATCH {path} failed: HTTP {resp.status_code}")
+        text = resp.text.strip()
+        if not text:
+            return None
         body = resp.json()
         if body.get("errorNumber", 0) != 0:
             raise WattsApiError(f"PATCH {path} API error: {body}")
@@ -76,7 +82,9 @@ class WattsApiClient:
         return result
 
     async def get_devices(self, location_id: str) -> list[WattsDevice]:
-        raw: list[dict] = await self._get(f"/Location/{location_id}/Devices")
+        raw = await self._get(f"/Location/{location_id}/Devices")
+        if not isinstance(raw, list):
+            raise WattsApiError(f"Expected list from /Devices, got {type(raw).__name__}")
         devices: list[WattsDevice] = []
         for item in raw:
             try:
@@ -99,21 +107,36 @@ class WattsApiClient:
         self,
         device_id: str,
         schedule_active: bool,
-        heat: float | None,
-        cool: float | None,
+        heat: float,
+        cool: float,
     ) -> None:
-        settings: dict[str, Any] = {}
-        if schedule_active:
-            if heat is not None:
-                settings["HeatHold"] = heat
-            if cool is not None:
-                settings["CoolHold"] = cool
-        else:
-            if heat is not None:
-                settings["Heat"] = heat
-            if cool is not None:
-                settings["Cool"] = cool
-        await self._patch(f"/Device/{device_id}", {"Settings": settings})
+        heat_key = "HeatHold" if schedule_active else "Heat"
+        cool_key = "CoolHold" if schedule_active else "Cool"
+        await self._patch(
+            f"/Device/{device_id}",
+            {"Settings": {heat_key: heat, cool_key: cool}},
+        )
+
+    async def refresh_device(self, device_id: str) -> None:
+        """Ask the server to pull fresh state from the thermostat."""
+        await self._get(f"/Device/{device_id}/Refresh")
+
+    async def set_humidity(self, device_id: str, target: float) -> None:
+        await self._patch(f"/Device/{device_id}", {"Settings": {"Hum": target}})
+
+    async def set_floor_min(
+        self, device_id: str, w: float, a: float
+    ) -> None:
+        await self._patch(
+            f"/Device/{device_id}",
+            {"Settings": {"Schedule": {"Floor": {"W": w, "A": a}}}},
+        )
+
+    async def set_away_state(self, location_id: str, away: bool) -> None:
+        await self._patch(
+            f"/Location/{location_id}/State",
+            {"awayState": 1 if away else 0},
+        )
 
     @staticmethod
     def find_default_location(locations: list[dict[str, Any]]) -> dict[str, Any]:

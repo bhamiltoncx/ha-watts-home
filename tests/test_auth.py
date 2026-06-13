@@ -1,6 +1,6 @@
 """Integration tests for WattsAuth — hit the real Watts API.
 
-Skip when WAHA_USER / WAHA_PASS environment variables are not set.
+Skip when WATTS_USER / WATTS_PASS environment variables are not set.
 """
 
 from __future__ import annotations
@@ -33,12 +33,12 @@ _auth_mod = _load_module("custom_components.watts_home.auth", _ROOT / "auth.py")
 WattsAuth = _auth_mod.WattsAuth  # type: ignore[attr-defined]
 
 pytestmark = pytest.mark.skipif(
-    not os.environ.get("WAHA_USER") or not os.environ.get("WAHA_PASS"),
-    reason="WAHA_USER/WAHA_PASS not set",
+    not os.environ.get("WATTS_USER") or not os.environ.get("WATTS_PASS"),
+    reason="WATTS_USER/WATTS_PASS not set",
 )
 
-USERNAME = os.environ.get("WAHA_USER", "")
-PASSWORD = os.environ.get("WAHA_PASS", "")
+USERNAME = os.environ.get("WATTS_USER", "")
+PASSWORD = os.environ.get("WATTS_PASS", "")
 
 
 async def test_login_returns_tokens() -> None:
