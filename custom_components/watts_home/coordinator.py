@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from datetime import timedelta
 from typing import Any
 
@@ -48,6 +49,14 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[dict[str, WattsDevice]]):
         )
         self._entry = entry
         self._session = session
+
+    def optimistic_update(
+        self, device_id: str, updater: Callable[[WattsDevice], None]
+    ) -> None:
+        """Apply an optimistic state change so entities reflect it immediately."""
+        if self.data and device_id in self.data:
+            updater(self.data[device_id])
+            self.async_set_updated_data(self.data)
 
     async def _ensure_token(self) -> str:
         """Return a valid access_token, refreshing or re-logging as needed."""

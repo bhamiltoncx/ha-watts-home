@@ -1,7 +1,7 @@
 """Tests for the Watts Home config flow.
 
 Happy-path and already-configured tests require real credentials
-(WAHA_USER / WAHA_PASS env vars) and hit the live Watts API.
+(WATTS_USER / WATTS_PASS env vars) and hit the live Watts API.
 
 The invalid-auth test uses a deliberate wrong password so the login
 server rejects it — no mocks needed.
@@ -17,12 +17,12 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-USERNAME = os.environ.get("WAHA_USER", "")
-PASSWORD = os.environ.get("WAHA_PASS", "")
+USERNAME = os.environ.get("WATTS_USER", "")
+PASSWORD = os.environ.get("WATTS_PASS", "")
 
 _needs_creds = pytest.mark.skipif(
     not USERNAME or not PASSWORD,
-    reason="WAHA_USER/WAHA_PASS not set",
+    reason="WATTS_USER/WATTS_PASS not set",
 )
 
 

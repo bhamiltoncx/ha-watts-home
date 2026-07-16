@@ -1,5 +1,7 @@
 """Constants for the Watts Home (Tekmar) integration."""
 
+from __future__ import annotations
+
 from typing import Final
 
 DOMAIN: Final = "watts_home"
@@ -43,6 +45,7 @@ WATTS_TO_HA_MODE: dict[str, str] = {
     "Fan": "fan_only",
     "Dry": "dry",
     "Dehumidify": "dry",
+    "Emer": "emergency_heat",
 }
 
 # Maps Home Assistant HVAC modes back to Watts API mode values (title-case).
@@ -53,6 +56,7 @@ HA_TO_WATTS_MODE: dict[str, str] = {
     "off": "Off",
     "fan_only": "Fan",
     "dry": "Dry",
+    "emergency_heat": "Emer",
 }
 
 # Maps Watts State.Op values to Home Assistant HVAC actions.
