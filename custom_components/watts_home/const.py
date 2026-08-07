@@ -22,6 +22,11 @@ DEFAULT_SCAN_INTERVAL: Final = 60
 MIN_SCAN_INTERVAL: Final = 30
 MAX_SCAN_INTERVAL: Final = 3600
 
+# The B2C gateway in front of login.watts.io returns sporadic 502s that
+# succeed on an immediate retry.
+AUTH_MAX_ATTEMPTS: Final = 4
+AUTH_RETRY_BACKOFF_SECONDS: Final = 1.0
+
 CONF_USERNAME: Final = "username"
 CONF_PASSWORD: Final = "password"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
