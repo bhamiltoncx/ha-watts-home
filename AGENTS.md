@@ -7,6 +7,11 @@ Guidance for coding agents working in this repository.
 A Home Assistant custom integration for Watts Home (Tekmar) thermostats, living
 under `custom_components/watts_home/`. Tests are pytest-based in `tests/`.
 
+[CONTRIBUTING.md](CONTRIBUTING.md) is the source of truth for environment setup,
+dependency installation, commit hooks, and fixture regeneration. Read it first if
+the working environment is not already set up; this file covers only what differs
+for agents.
+
 ## Pull requests
 
 This repo uses **GitHub stacked PRs** via the [`gh-stack`][gh-stack] CLI
@@ -41,13 +46,15 @@ Open PRs as drafts. Keep PR bodies terse and factual — what changed and why.
 
 ## Conventions
 
-- Commit messages follow [Conventional Commits][cc]; the `conventional-pre-commit`
-  hook enforces the prefix (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`, …).
-  Releases are cut from these by release-please, so the prefix determines version bumps.
-- `ruff` handles linting and formatting; `prettier` covers JSON and YAML. Run
+- Commit messages follow Conventional Commits — the `conventional-pre-commit`
+  hook rejects anything else. See [CONTRIBUTING.md](CONTRIBUTING.md#commit-messages)
+  for the allowed prefixes and how they drive releases.
+- `ruff` lints and formats Python; `prettier` covers JSON and YAML. Run
   `pre-commit run --all-files` before committing.
-- Comments should be minimal — short *why* comments for non-obvious constraints
+- Comments should be minimal — short _why_ comments for non-obvious constraints
   only, not narration of what the code already shows.
+- `strings.json` and `translations/en.json` are kept identical. A change to one
+  needs the same change in the other, or the UI renders raw translation keys.
 
 ## Testing
 
@@ -55,11 +62,11 @@ Open PRs as drafts. Keep PR bodies terse and factual — what changed and why.
 .venv/bin/python -m pytest tests/ -q
 ```
 
-Some tests hit the live Watts API and are skipped unless `WATTS_USER` and
-`WATTS_PASS` are set in the environment. Every branch in a stack should be green
-before it is committed.
+Every branch in a stack should be green before it is committed. Some tests hit
+the live Watts API and are skipped unless `WATTS_USER` and `WATTS_PASS` are set;
+a run that reports skips is expected, not a failure. Prefer mocking over adding
+new credential-gated tests, so coverage holds without an account.
 
-CI runs Home Assistant `hassfest` and HACS validation on every push and PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md#running-tests) for setup and credentials.
 
 [gh-stack]: https://github.com/github/gh-stack
-[cc]: https://www.conventionalcommits.org/
