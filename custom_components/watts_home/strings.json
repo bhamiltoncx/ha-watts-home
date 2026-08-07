@@ -66,6 +66,13 @@
           "password": "Password",
           "scan_interval": "Polling interval (seconds)"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate Watts Home (Tekmar)",
+        "description": "The stored credentials for {username} are no longer accepted. Enter the password again.",
+        "data": {
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -73,7 +80,9 @@
       "unknown": "Unexpected error. Check the logs for details."
     },
     "abort": {
-      "already_configured": "This Watts Home account is already configured."
+      "already_configured": "This Watts Home account is already configured.",
+      "reauth_successful": "Re-authentication was successful.",
+      "unique_id_mismatch": "These credentials are for a different Watts Home account."
     }
   }
 }

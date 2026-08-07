@@ -40,9 +40,7 @@ rules:
   parallel_updates:
     status: todo
     comment: PARALLEL_UPDATES constant not yet set on climate/sensor platforms.
-  reauthentication_flow:
-    status: todo
-    comment: Token refresh and re-login are handled automatically, but no HA re-auth UI flow is implemented.
+  reauthentication_flow: done
   test_coverage:
     status: todo
     comment: Auth and API have integration tests; climate and sensor have unit tests. Config flow and coordinator have no test coverage.

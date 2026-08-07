@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
@@ -28,6 +29,8 @@ _STEP_SCHEMA = vol.Schema(
         ),
     }
 )
+
+_REAUTH_SCHEMA = vol.Schema({vol.Required(CONF_PASSWORD): str})
 
 
 class WattsHomeConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -73,5 +76,47 @@ class WattsHomeConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=_STEP_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> ConfigFlowResult:
+        """Start re-auth when stored credentials stop working."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask for the password again and refresh the stored tokens."""
+        errors: dict[str, str] = {}
+        reauth_entry = self._get_reauth_entry()
+        username: str = reauth_entry.data[CONF_USERNAME]
+
+        if user_input is not None:
+            password: str = user_input[CONF_PASSWORD]
+
+            try:
+                async with AsyncSession(impersonate="chrome110") as session:
+                    tokens = await WattsAuth.login(session, username, password)
+                    client = WattsApiClient(session, tokens["access_token"])
+                    user = await client.get_user_details()
+            except WattsAuthError:
+                errors["base"] = "invalid_auth"
+            except (WattsApiError, Exception):  # noqa: BLE001
+                errors["base"] = "unknown"
+            else:
+                await self.async_set_unique_id(user.get("userId", username))
+                self._abort_if_unique_id_mismatch()
+
+                return self.async_update_reload_and_abort(
+                    reauth_entry,
+                    data_updates={CONF_PASSWORD: password, **tokens},
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=_REAUTH_SCHEMA,
+            description_placeholders={CONF_USERNAME: username},
             errors=errors,
         )
