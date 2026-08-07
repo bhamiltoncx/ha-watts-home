@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import hashlib
 import json
@@ -10,9 +11,12 @@ import urllib.parse
 from typing import Any
 
 from curl_cffi.requests import AsyncSession
+from curl_cffi.requests.exceptions import RequestException
 
 from .const import (
     AUTH_HOST,
+    AUTH_MAX_ATTEMPTS,
+    AUTH_RETRY_BACKOFF_SECONDS,
     BROWSER_UA,
     CLIENT_ID,
     CODE_VERIFIER,
@@ -26,6 +30,10 @@ _LOGGER = logging.getLogger(__name__)
 
 _SCRUB = {"access_token", "refresh_token", "id_token", "client_info"}
 
+# Gateway/transport failures that say nothing about the credentials, so a
+# retry is worth attempting before giving up on the request.
+_RETRY_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
+
 
 def _scrub(data: dict[str, Any]) -> dict[str, Any]:
     return {k: ("***" if k in _SCRUB else v) for k, v in data.items()}
@@ -37,6 +45,50 @@ class WattsAuthError(Exception):
 
 class WattsTokenExpiredError(WattsAuthError):
     """Raised when the refresh token is expired or rejected (4xx)."""
+
+
+class WattsServerError(WattsAuthError):
+    """Raised when the auth server fails transiently and retries are exhausted.
+
+    Distinct from the other errors so callers can retry later rather than
+    treating it as a credential problem.
+    """
+
+
+async def _request(
+    session: AsyncSession, method: str, url: str, label: str, **kwargs: Any
+) -> Any:
+    """Issue a request, retrying transient server and transport failures.
+
+    Raises WattsServerError once the attempt budget is exhausted. Responses
+    with a non-retryable status are returned as-is for the caller to check.
+    """
+    failure = ""
+    for attempt in range(1, AUTH_MAX_ATTEMPTS + 1):
+        try:
+            resp = await session.request(method, url, **kwargs)
+        except RequestException as exc:
+            failure = f"{type(exc).__name__}: {exc}"
+        else:
+            if resp.status_code not in _RETRY_STATUSES:
+                return resp
+            failure = f"HTTP {resp.status_code}"
+
+        if attempt < AUTH_MAX_ATTEMPTS:
+            delay = AUTH_RETRY_BACKOFF_SECONDS * 2 ** (attempt - 1)
+            _LOGGER.debug(
+                "%s failed (%s), retry %d/%d in %.1fs",
+                label,
+                failure,
+                attempt,
+                AUTH_MAX_ATTEMPTS - 1,
+                delay,
+            )
+            await asyncio.sleep(delay)
+
+    raise WattsServerError(
+        f"{label} failed after {AUTH_MAX_ATTEMPTS} attempts: {failure}"
+    )
 
 
 def code_challenge(verifier: str) -> str:
@@ -86,7 +138,13 @@ class WattsAuth:
         )
 
         _LOGGER.debug("Step 1: GET authorize URL")
-        resp = await session.get(authorize_url, headers={"User-Agent": BROWSER_UA})
+        resp = await _request(
+            session,
+            "GET",
+            authorize_url,
+            label="Authorize GET",
+            headers={"User-Agent": BROWSER_UA},
+        )
         if resp.status_code != 200:
             raise WattsAuthError(f"Authorize GET failed: HTTP {resp.status_code}")
 
@@ -133,8 +191,11 @@ class WattsAuth:
             }
         )
         _LOGGER.debug("Step 2: POST credentials to SelfAsserted")
-        resp = await session.post(
+        resp = await _request(
+            session,
+            "POST",
             self_asserted_url,
+            label="SelfAsserted POST",
             data=form_body.encode(),
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -162,8 +223,11 @@ class WattsAuth:
             f"&tx=StateProperties={transaction_encoded}"
         )
         _LOGGER.debug("Step 3: GET confirmed endpoint")
-        resp = await session.get(
+        resp = await _request(
+            session,
+            "GET",
             confirm_url,
+            label="Confirmed GET",
             allow_redirects=False,
             headers={
                 "User-Agent": BROWSER_UA,
@@ -205,8 +269,11 @@ class WattsAuth:
             f"&code_verifier={CODE_VERIFIER}"
         )
         _LOGGER.debug("Step 4: exchanging auth code for tokens")
-        resp = await session.post(
+        resp = await _request(
+            session,
+            "POST",
             token_url,
+            label="Token exchange",
             data=body.encode(),
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -238,8 +305,11 @@ class WattsAuth:
             f"&redirect_uri={urllib.parse.quote(REDIRECT_URI, safe='')}"
         )
         _LOGGER.debug("Refreshing access token")
-        resp = await session.post(
+        resp = await _request(
+            session,
+            "POST",
             token_url,
+            label="Token refresh",
             data=body.encode(),
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",

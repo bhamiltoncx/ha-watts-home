@@ -15,7 +15,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import WattsApiClient, WattsApiError
-from .auth import WattsAuth, WattsAuthError, WattsTokenExpiredError
+from .auth import WattsAuth, WattsAuthError, WattsServerError, WattsTokenExpiredError
 from .models import WattsDevice
 from .const import (
     CONF_SCAN_INTERVAL,
@@ -78,6 +78,9 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[dict[str, WattsDevice]]):
                 return str(data["access_token"])
             except WattsTokenExpiredError:
                 _LOGGER.debug("Refresh token expired, falling back to full re-login")
+            except WattsServerError:
+                # Transient — surface as UpdateFailed so polling continues.
+                raise
             except WattsAuthError as exc:
                 raise ConfigEntryAuthFailed(str(exc)) from exc
 
@@ -93,6 +96,8 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[dict[str, WattsDevice]]):
             self.hass.config_entries.async_update_entry(self._entry, data=data)
             _LOGGER.debug("Full re-login succeeded")
             return str(data["access_token"])
+        except WattsServerError:
+            raise
         except WattsAuthError as exc:
             raise ConfigEntryAuthFailed(str(exc)) from exc
 
