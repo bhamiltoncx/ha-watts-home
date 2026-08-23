@@ -16,6 +16,7 @@ from custom_components.watts_home.models import WattsDevice
 
 _ROOT = Path(__file__).parent.parent / "custom_components" / "watts_home"
 _FIXTURE = Path(__file__).parent / "fixtures" / "devices.json"
+_SETPOINT_FIXTURE = Path(__file__).parent / "fixtures" / "setpoint_devices.json"
 
 
 def _load(name: str, path: Path) -> object:
@@ -179,12 +180,10 @@ class TestModelNames:
 
         assert MODEL_NAMES["562"] == "Tekmar WiFi Thermostat 562"
 
-    def test_unknown_model_fallback(self, devices: list[WattsDevice]) -> None:
+    def test_170_model_name(self, devices: list[WattsDevice]) -> None:
         from custom_components.watts_home.const import MODEL_NAMES  # type: ignore[import]
 
-        model_num = "999"
-        name = MODEL_NAMES.get(model_num, f"Tekmar WiFi Thermostat {model_num}")
-        assert name == "Tekmar WiFi Thermostat 999"
+        assert MODEL_NAMES["170"] == "Tekmar Wi-Fi Setpoint Control 170"
 
 
 # ---------------------------------------------------------------------------
@@ -643,3 +642,119 @@ class TestFloorEntityMaxTemp:
     def test_max_temp_uses_schedule_floor_max(self) -> None:
         d = _floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}, "FloorMax": 85.0})
         assert WattsFloorClimateEntity.max_temp.fget(self._stub(d)) == 85.0
+
+
+# ---------------------------------------------------------------------------
+# Current temperature follows Target.Sensor (setpoint controls use Sensor1)
+# ---------------------------------------------------------------------------
+
+
+def _sensor_device(
+    *,
+    sensors: dict[str, object],
+    target: dict[str, object] | None = None,
+) -> WattsDevice:
+    data: dict[str, object] = {
+        "Mode": {"Val": "Heat", "Enum": ["Off", "Heat"]},
+        "TempUnits": {"Val": "F"},
+        "Sensors": sensors,
+    }
+    if target is not None:
+        data["Target"] = target
+    return WattsDevice.model_validate(
+        {
+            "deviceId": "sensor-1",
+            "name": "Tank",
+            "modelNumber": "170",
+            "isConnected": True,
+            "data": data,
+        }
+    )
+
+
+class TestCurrentTemperatureSensorSelection:
+    """A 170 reports its controlled medium under Sensors.Sensor1, not Room."""
+
+    def test_uses_the_sensor_named_by_target(self) -> None:
+        d = _sensor_device(
+            sensors={"Sensor1": {"Val": 103.0, "Status": "Okay"}},
+            target={"Sensor": "Sensor1", "Heat": 104.0},
+        )
+        assert device_current_temperature(d) == 103.0
+
+    def test_ignores_named_sensor_that_is_not_okay(self) -> None:
+        d = _sensor_device(
+            sensors={"Sensor1": {"Val": 103.0, "Status": "Absent"}},
+            target={"Sensor": "Sensor1", "Heat": 104.0},
+        )
+        assert device_current_temperature(d) is None
+
+    def test_named_room_sensor_still_resolves(self) -> None:
+        d = _sensor_device(
+            sensors={"Room": {"Val": 68.0, "Status": "Okay"}},
+            target={"Sensor": "Room", "Heat": 70.0},
+        )
+        assert device_current_temperature(d) == 68.0
+
+    def test_falls_back_to_room_without_a_named_sensor(self) -> None:
+        d = _sensor_device(
+            sensors={"Room": {"Val": 68.0, "Status": "Okay"}},
+            target={"Heat": 70.0},
+        )
+        assert device_current_temperature(d) == 68.0
+
+    def test_falls_back_to_room_when_named_sensor_is_missing(self) -> None:
+        d = _sensor_device(
+            sensors={"Room": {"Val": 68.0, "Status": "Okay"}},
+            target={"Sensor": "Sensor3", "Heat": 70.0},
+        )
+        assert device_current_temperature(d) == 68.0
+
+    def test_returns_none_when_no_sensor_resolves(self) -> None:
+        d = _sensor_device(
+            sensors={"Sensor1": {"Val": 103.0, "Status": "Okay"}},
+            target={"Sensor": "Sensor2", "Heat": 104.0},
+        )
+        assert device_current_temperature(d) is None
+
+
+# ---------------------------------------------------------------------------
+# Setpoint Control 170 — the whole surface, from a real payload (issue #14)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def setpoint_device() -> WattsDevice:
+    raw = json.loads(_SETPOINT_FIXTURE.read_text())["body"]
+    return WattsDevice.model_validate(raw[0])
+
+
+class TestSetpointControl170:
+    def test_bounds_come_from_the_limit_fields(
+        self, setpoint_device: WattsDevice
+    ) -> None:
+        assert device_min_temp(setpoint_device) == 40.0
+        assert device_max_temp(setpoint_device) == 230.0
+
+    def test_current_temperature_reads_sensor1(
+        self, setpoint_device: WattsDevice
+    ) -> None:
+        assert device_current_temperature(setpoint_device) == 103.0
+
+    def test_target_temperature_is_the_heat_setpoint(
+        self, setpoint_device: WattsDevice
+    ) -> None:
+        assert device_target_temperature(setpoint_device) == 104.0
+
+    def test_heat_only_modes(self, setpoint_device: WattsDevice) -> None:
+        assert device_hvac_modes(setpoint_device) == [HVACMode.OFF, HVACMode.HEAT]
+
+    def test_step_is_one_degree(self, setpoint_device: WattsDevice) -> None:
+        assert device_target_temp_step(setpoint_device) == 1.0
+
+    def test_the_held_setpoint_is_settable(self, setpoint_device: WattsDevice) -> None:
+        """HA core rejects a setpoint outside [min_temp, max_temp]."""
+        target = device_target_temperature(setpoint_device)
+        assert target is not None
+        assert device_min_temp(setpoint_device) <= target
+        assert target <= device_max_temp(setpoint_device)

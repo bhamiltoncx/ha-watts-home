@@ -25,12 +25,11 @@ from homeassistant.util.unit_conversion import TemperatureConverter
 from .const import (
     DOMAIN,
     HA_TO_WATTS_MODE,
-    MODEL_NAMES,
     WATTS_TO_HA_ACTION,
     WATTS_TO_HA_MODE,
 )
 from .coordinator import WattsDataUpdateCoordinator
-from .helpers import device_temperature_unit
+from .helpers import device_model_name, device_temperature_unit
 from .models import WattsDevice
 
 # ---------------------------------------------------------------------------
@@ -82,12 +81,20 @@ def device_hvac_action(device: WattsDevice) -> HVACAction | None:
 
 
 def device_current_temperature(device: WattsDevice) -> float | None:
+    """Reading from the sensor the target controls against.
+
+    Setpoint controls name a numbered input (Sensor1) in Target.Sensor and
+    send no Room sensor at all.
+    """
     if device.data is None or device.data.sensors is None:
         return None
-    room = device.data.sensors.room
-    if room is None:
+    named = device.data.target.sensor if device.data.target else None
+    sensor = device.data.sensors.by_name(named) if named else None
+    if sensor is None:
+        sensor = device.data.sensors.room
+    if sensor is None:
         return None
-    return room.val if room.status == "Okay" else None
+    return sensor.val if sensor.status == "Okay" else None
 
 
 def device_current_humidity(device: WattsDevice) -> float | None:
@@ -317,9 +324,7 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
             name=device.name,
-            model=MODEL_NAMES.get(
-                device.model_number, f"Tekmar WiFi Thermostat {device.model_number}"
-            ),
+            model=device_model_name(device),
             manufacturer="Watts Home",
         )
 
@@ -517,10 +522,7 @@ class WattsFloorClimateEntity(
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
             name=device.name,
-            model=MODEL_NAMES.get(
-                device.model_number,
-                f"Tekmar WiFi Thermostat {device.model_number}",
-            ),
+            model=device_model_name(device),
             manufacturer="Watts Home",
         )
 

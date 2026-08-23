@@ -38,6 +38,7 @@ MODEL_NAMES: dict[str, str] = {
     "562": "Tekmar WiFi Thermostat 562",
     "563": "Tekmar WiFi Thermostat 563",
     "564": "Tekmar WiFi Thermostat 564",
+    "170": "Tekmar Wi-Fi Setpoint Control 170",
 }
 
 # Maps Watts API HVAC mode values to Home Assistant HVAC modes.
