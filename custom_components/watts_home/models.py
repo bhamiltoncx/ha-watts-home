@@ -71,10 +71,10 @@ class WattsSchedule(BaseModel):
     floor: WattsFloorSetpoint | None = Field(None, alias="Floor")
     floor_min: float = Field(0, alias="FloorMin")
     floor_max: float = Field(0, alias="FloorMax")
-    heat_min: float = Field(40, alias="HeatMin")
-    heat_max: float = Field(95, alias="HeatMax")
-    cool_min: float = Field(45, alias="CoolMin")
-    cool_max: float = Field(100, alias="CoolMax")
+    heat_min: float | None = Field(None, alias="HeatMin")
+    heat_max: float | None = Field(None, alias="HeatMax")
+    cool_min: float | None = Field(None, alias="CoolMin")
+    cool_max: float | None = Field(None, alias="CoolMax")
 
 
 class WattsEnergyChannel(BaseModel):

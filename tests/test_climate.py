@@ -6,6 +6,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from homeassistant.components.climate import ClimateEntityFeature, HVACAction, HVACMode
@@ -40,6 +41,10 @@ device_target_temp_low = _climate.device_target_temp_low  # type: ignore[attr-de
 device_temperature_unit = _climate.device_temperature_unit  # type: ignore[attr-defined]
 device_supported_features = _climate.device_supported_features  # type: ignore[attr-defined]
 device_schedule_active = _climate.device_schedule_active  # type: ignore[attr-defined]
+device_min_temp = _climate.device_min_temp  # type: ignore[attr-defined]
+device_max_temp = _climate.device_max_temp  # type: ignore[attr-defined]
+device_target_temp_step = _climate.device_target_temp_step  # type: ignore[attr-defined]
+WattsClimateEntity = _climate.WattsClimateEntity  # type: ignore[attr-defined]
 
 
 @pytest.fixture(scope="module")
@@ -368,3 +373,128 @@ class TestNullData:
 
     def test_schedule_active_returns_false(self) -> None:
         assert device_schedule_active(_NULL_DEVICE) is False
+
+
+# ---------------------------------------------------------------------------
+# Setpoint bounds — Target present but without Min/Max/Steps (issue #14)
+# ---------------------------------------------------------------------------
+
+
+def _bounds_device(
+    *,
+    target: dict[str, float] | None = None,
+    schedule: dict[str, float] | None = None,
+    mode: str = "Heat",
+    units: str = "F",
+) -> WattsDevice:
+    data: dict[str, object] = {
+        "Mode": {"Val": mode, "Enum": ["Off", "Heat", "Cool", "Auto"]},
+        "TempUnits": {"Val": units},
+    }
+    if target is not None:
+        data["Target"] = target
+    if schedule is not None:
+        data["Schedule"] = schedule
+    return WattsDevice.model_validate(
+        {
+            "deviceId": "bounds-1",
+            "name": "Bounds",
+            "modelNumber": "170",
+            "isConnected": True,
+            "data": data,
+        }
+    )
+
+
+class TestSetpointBounds:
+    """A Tekmar 170 returns Target without Min/Max/Steps (issue #14)."""
+
+    def test_target_range_is_used_when_present(self) -> None:
+        d = _bounds_device(
+            target={"Heat": 68.0, "Min": 40.0, "Max": 95.0, "Steps": 1.0}
+        )
+        assert device_min_temp(d) == 40.0
+        assert device_max_temp(d) == 95.0
+        assert device_target_temp_step(d) == 1.0
+
+    def test_heat_mode_falls_back_to_schedule_heat_range(self) -> None:
+        d = _bounds_device(
+            target={"Heat": 68.0},
+            schedule={"HeatMin": 50.0, "HeatMax": 90.0},
+        )
+        assert device_min_temp(d) == 50.0
+        assert device_max_temp(d) == 90.0
+
+    def test_cool_mode_falls_back_to_schedule_cool_range(self) -> None:
+        d = _bounds_device(
+            target={"Cool": 74.0},
+            schedule={"CoolMin": 60.0, "CoolMax": 99.0},
+            mode="Cool",
+        )
+        assert device_min_temp(d) == 60.0
+        assert device_max_temp(d) == 99.0
+
+    def test_heat_cool_mode_spans_both_schedule_ranges(self) -> None:
+        d = _bounds_device(
+            target={"Heat": 68.0, "Cool": 74.0},
+            schedule={
+                "HeatMin": 50.0,
+                "HeatMax": 90.0,
+                "CoolMin": 60.0,
+                "CoolMax": 99.0,
+            },
+            mode="Auto",
+        )
+        assert device_min_temp(d) == 50.0
+        assert device_max_temp(d) == 99.0
+
+    def test_fahrenheit_device_without_schedule_uses_converted_ha_defaults(
+        self,
+    ) -> None:
+        d = _bounds_device(target={"Heat": 68.0})
+        assert device_min_temp(d) == pytest.approx(44.6)
+        assert device_max_temp(d) == pytest.approx(95.0)
+
+    def test_celsius_device_without_schedule_uses_ha_defaults(self) -> None:
+        d = _bounds_device(target={"Heat": 20.0}, units="C")
+        assert device_min_temp(d) == pytest.approx(7.0)
+        assert device_max_temp(d) == pytest.approx(35.0)
+
+    def test_schedule_without_bounds_uses_ha_defaults(self) -> None:
+        d = _bounds_device(target={"Heat": 68.0}, schedule={"SchedActive": 1})
+        assert device_min_temp(d) == pytest.approx(44.6)
+        assert device_max_temp(d) == pytest.approx(95.0)
+
+    def test_step_falls_back_to_one_when_absent(self) -> None:
+        d = _bounds_device(target={"Heat": 68.0})
+        assert device_target_temp_step(d) == 1.0
+
+    def test_null_data_still_yields_numeric_bounds(self) -> None:
+        assert isinstance(device_min_temp(_NULL_DATA_FIELD_DEVICE), float)
+        assert isinstance(device_max_temp(_NULL_DATA_FIELD_DEVICE), float)
+        assert isinstance(device_target_temp_step(_NULL_DATA_FIELD_DEVICE), float)
+
+    def test_null_target_still_yields_numeric_bounds(self) -> None:
+        assert isinstance(device_min_temp(_NULL_DEVICE), float)
+        assert isinstance(device_max_temp(_NULL_DEVICE), float)
+        assert isinstance(device_target_temp_step(_NULL_DEVICE), float)
+
+
+class TestEntitySetpointBounds:
+    """HA core compares `check_temp < entity.min_temp`, so None is a TypeError."""
+
+    @staticmethod
+    def _stub(device: WattsDevice) -> SimpleNamespace:
+        return SimpleNamespace(_device=lambda: device)
+
+    def test_min_temp_is_never_none_without_target_range(self) -> None:
+        stub = self._stub(_bounds_device(target={"Heat": 68.0}))
+        assert isinstance(WattsClimateEntity.min_temp.fget(stub), float)
+
+    def test_max_temp_is_never_none_without_target_range(self) -> None:
+        stub = self._stub(_bounds_device(target={"Heat": 68.0}))
+        assert isinstance(WattsClimateEntity.max_temp.fget(stub), float)
+
+    def test_target_temperature_step_is_never_none_without_target_range(self) -> None:
+        stub = self._stub(_bounds_device(target={"Heat": 68.0}))
+        assert isinstance(WattsClimateEntity.target_temperature_step.fget(stub), float)

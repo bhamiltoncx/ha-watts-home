@@ -7,17 +7,20 @@ from typing import Any
 from homeassistant.components.climate import (
     ATTR_TARGET_TEMP_HIGH,
     ATTR_TARGET_TEMP_LOW,
+    DEFAULT_MAX_TEMP,
+    DEFAULT_MIN_TEMP,
     ClimateEntity,
     ClimateEntityFeature,
     HVACAction,
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE
+from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .const import (
     DOMAIN,
@@ -116,6 +119,58 @@ def device_target_temp_low(device: WattsDevice) -> float | None:
     if device.data is None or device.data.target is None:
         return None
     return device.data.target.heat
+
+
+def _schedule_bounds(device: WattsDevice) -> tuple[float | None, float | None]:
+    """Settable range from the schedule, for the mode the device is in."""
+    sched = device.data.schedule if device.data else None
+    if sched is None:
+        return None, None
+    mode = device_hvac_mode(device)
+    if mode == HVACMode.COOL:
+        return sched.cool_min, sched.cool_max
+    if mode == HVACMode.HEAT_COOL:
+        lows = [v for v in (sched.heat_min, sched.cool_min) if v is not None]
+        highs = [v for v in (sched.heat_max, sched.cool_max) if v is not None]
+        return (min(lows) if lows else None, max(highs) if highs else None)
+    return sched.heat_min, sched.heat_max
+
+
+def _default_bound(device: WattsDevice, celsius_default: float) -> float:
+    return float(
+        TemperatureConverter.convert(
+            celsius_default,
+            UnitOfTemperature.CELSIUS,
+            device_temperature_unit(device),
+        )
+    )
+
+
+def device_min_temp(device: WattsDevice) -> float:
+    """Lowest settable setpoint.
+
+    Setpoint controls such as the Tekmar 170 send Target without Min/Max, and
+    HA core compares the requested temperature against these, so they must
+    never be None.
+    """
+    if device.data and device.data.target and device.data.target.min is not None:
+        return device.data.target.min
+    low, _ = _schedule_bounds(device)
+    return low if low is not None else _default_bound(device, DEFAULT_MIN_TEMP)
+
+
+def device_max_temp(device: WattsDevice) -> float:
+    """Highest settable setpoint. See device_min_temp."""
+    if device.data and device.data.target and device.data.target.max is not None:
+        return device.data.target.max
+    _, high = _schedule_bounds(device)
+    return high if high is not None else _default_bound(device, DEFAULT_MAX_TEMP)
+
+
+def device_target_temp_step(device: WattsDevice) -> float:
+    if device.data and device.data.target and device.data.target.steps is not None:
+        return device.data.target.steps
+    return 1.0
 
 
 def device_target_humidity(device: WattsDevice) -> float | None:
@@ -282,18 +337,15 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
 
     @property
     def min_temp(self) -> float:
-        d = self._device()
-        return d.data.target.min if d.data and d.data.target else 40.0
+        return device_min_temp(self._device())
 
     @property
     def max_temp(self) -> float:
-        d = self._device()
-        return d.data.target.max if d.data and d.data.target else 95.0
+        return device_max_temp(self._device())
 
     @property
     def target_temperature_step(self) -> float:
-        d = self._device()
-        return d.data.target.steps if d.data and d.data.target else 1.0
+        return device_target_temp_step(self._device())
 
     @property
     def temperature_unit(self) -> str:
