@@ -1,1 +1,5 @@
 node_modules/
+
+# release-please rewrites this file with JSON.stringify, which always expands
+# arrays; prettier collapses them. release-please writes unattended, so it wins.
+custom_components/watts_home/manifest.json
