@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 
 class WattsSensor(BaseModel):
@@ -11,10 +11,31 @@ class WattsSensor(BaseModel):
 
 
 class WattsSensors(BaseModel):
+    # Setpoint controls report numbered inputs (Sensor1, ...) instead of Room.
+    model_config = ConfigDict(extra="allow")
+
     room: WattsSensor | None = Field(None, alias="Room")
     floor: WattsSensor | None = Field(None, alias="Floor")
     outdoor: WattsSensor | None = Field(None, alias="Outdoor")
     rh: WattsSensor | None = Field(None, alias="RH")
+
+    def by_name(self, name: str) -> WattsSensor | None:
+        """Look up a sensor by the name the API uses for it."""
+        declared = {
+            "room": self.room,
+            "floor": self.floor,
+            "outdoor": self.outdoor,
+            "rh": self.rh,
+        }
+        if (sensor := declared.get(name.lower())) is not None:
+            return sensor
+        raw = (self.model_extra or {}).get(name)
+        if isinstance(raw, dict):
+            try:
+                return WattsSensor.model_validate(raw)
+            except ValidationError:
+                return None
+        return None
 
 
 class WattsState(BaseModel):
@@ -28,6 +49,7 @@ class WattsMode(BaseModel):
 
 
 class WattsTarget(BaseModel):
+    sensor: str | None = Field(None, alias="Sensor")
     heat: float | None = Field(None, alias="Heat")
     cool: float | None = Field(None, alias="Cool")
     min: float | None = Field(None, alias="Min")

@@ -643,3 +643,77 @@ class TestFloorEntityMaxTemp:
     def test_max_temp_uses_schedule_floor_max(self) -> None:
         d = _floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}, "FloorMax": 85.0})
         assert WattsFloorClimateEntity.max_temp.fget(self._stub(d)) == 85.0
+
+
+# ---------------------------------------------------------------------------
+# Current temperature follows Target.Sensor (setpoint controls use Sensor1)
+# ---------------------------------------------------------------------------
+
+
+def _sensor_device(
+    *,
+    sensors: dict[str, object],
+    target: dict[str, object] | None = None,
+) -> WattsDevice:
+    data: dict[str, object] = {
+        "Mode": {"Val": "Heat", "Enum": ["Off", "Heat"]},
+        "TempUnits": {"Val": "F"},
+        "Sensors": sensors,
+    }
+    if target is not None:
+        data["Target"] = target
+    return WattsDevice.model_validate(
+        {
+            "deviceId": "sensor-1",
+            "name": "Tank",
+            "modelNumber": "170",
+            "isConnected": True,
+            "data": data,
+        }
+    )
+
+
+class TestCurrentTemperatureSensorSelection:
+    """A 170 reports its controlled medium under Sensors.Sensor1, not Room."""
+
+    def test_uses_the_sensor_named_by_target(self) -> None:
+        d = _sensor_device(
+            sensors={"Sensor1": {"Val": 103.0, "Status": "Okay"}},
+            target={"Sensor": "Sensor1", "Heat": 104.0},
+        )
+        assert device_current_temperature(d) == 103.0
+
+    def test_ignores_named_sensor_that_is_not_okay(self) -> None:
+        d = _sensor_device(
+            sensors={"Sensor1": {"Val": 103.0, "Status": "Absent"}},
+            target={"Sensor": "Sensor1", "Heat": 104.0},
+        )
+        assert device_current_temperature(d) is None
+
+    def test_named_room_sensor_still_resolves(self) -> None:
+        d = _sensor_device(
+            sensors={"Room": {"Val": 68.0, "Status": "Okay"}},
+            target={"Sensor": "Room", "Heat": 70.0},
+        )
+        assert device_current_temperature(d) == 68.0
+
+    def test_falls_back_to_room_without_a_named_sensor(self) -> None:
+        d = _sensor_device(
+            sensors={"Room": {"Val": 68.0, "Status": "Okay"}},
+            target={"Heat": 70.0},
+        )
+        assert device_current_temperature(d) == 68.0
+
+    def test_falls_back_to_room_when_named_sensor_is_missing(self) -> None:
+        d = _sensor_device(
+            sensors={"Room": {"Val": 68.0, "Status": "Okay"}},
+            target={"Sensor": "Sensor3", "Heat": 70.0},
+        )
+        assert device_current_temperature(d) == 68.0
+
+    def test_returns_none_when_no_sensor_resolves(self) -> None:
+        d = _sensor_device(
+            sensors={"Sensor1": {"Val": 103.0, "Status": "Okay"}},
+            target={"Sensor": "Sensor2", "Heat": 104.0},
+        )
+        assert device_current_temperature(d) is None
