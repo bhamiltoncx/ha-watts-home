@@ -199,6 +199,18 @@ def device_target_temp_step(device: WattsDevice) -> float:
     return 1.0
 
 
+def device_floor_max_temp(device: WattsDevice) -> float:
+    """Upper bound for the floor setpoint.
+
+    FloorMax is absent on some controls and parses as 0, which would leave the
+    entity with max == min == 0 and make HA core reject every setpoint.
+    """
+    sched = device.data.schedule if device.data else None
+    if sched is not None and sched.floor_max > 0:
+        return sched.floor_max
+    return _default_bound(device, DEFAULT_MAX_TEMP)
+
+
 def device_target_humidity(device: WattsDevice) -> float | None:
     if device.data is None or device.data.hum is None:
         return None
@@ -576,10 +588,7 @@ class WattsFloorClimateEntity(
 
     @property
     def max_temp(self) -> float:
-        d = self._device()
-        if d.data and d.data.schedule:
-            return d.data.schedule.floor_max
-        return 85.0
+        return device_floor_max_temp(self._device())
 
     @property
     def target_temperature_step(self) -> float:
