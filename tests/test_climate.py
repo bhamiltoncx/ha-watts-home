@@ -45,6 +45,8 @@ device_min_temp = _climate.device_min_temp  # type: ignore[attr-defined]
 device_max_temp = _climate.device_max_temp  # type: ignore[attr-defined]
 device_target_temp_step = _climate.device_target_temp_step  # type: ignore[attr-defined]
 WattsClimateEntity = _climate.WattsClimateEntity  # type: ignore[attr-defined]
+WattsFloorClimateEntity = _climate.WattsFloorClimateEntity  # type: ignore[attr-defined]
+device_floor_max_temp = _climate.device_floor_max_temp  # type: ignore[attr-defined]
 
 
 @pytest.fixture(scope="module")
@@ -569,3 +571,75 @@ class TestSetpointLimitFields:
         )
         assert device_min_temp(d) == 40.0
         assert device_max_temp(d) == 230.0
+
+
+# ---------------------------------------------------------------------------
+# Floor setpoint bounds — Schedule without FloorMax
+# ---------------------------------------------------------------------------
+
+
+def _floor_device(
+    *,
+    schedule: dict[str, object] | None = None,
+    units: str = "F",
+) -> WattsDevice:
+    data: dict[str, object] = {
+        "Mode": {"Val": "Heat", "Enum": ["Off", "Heat"]},
+        "TempUnits": {"Val": units},
+        "Sensors": {"Floor": {"Val": 72.0, "Status": "Okay"}},
+    }
+    if schedule is not None:
+        data["Schedule"] = schedule
+    return WattsDevice.model_validate(
+        {
+            "deviceId": "floor-1",
+            "name": "Slab",
+            "modelNumber": "563",
+            "isConnected": True,
+            "data": data,
+        }
+    )
+
+
+class TestFloorMaxTemp:
+    """FloorMax governs the floor entity's upper bound; 0 would reject every setpoint."""
+
+    def test_schedule_floor_max_is_used_when_present(self) -> None:
+        d = _floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}, "FloorMax": 85.0})
+        assert device_floor_max_temp(d) == 85.0
+
+    def test_falls_back_when_floor_max_absent(self) -> None:
+        d = _floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}})
+        assert device_floor_max_temp(d) == pytest.approx(95.0)
+
+    def test_falls_back_when_floor_max_is_zero(self) -> None:
+        d = _floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}, "FloorMax": 0})
+        assert device_floor_max_temp(d) == pytest.approx(95.0)
+
+    def test_celsius_device_falls_back_to_celsius_default(self) -> None:
+        d = _floor_device(schedule={"Floor": {"W": 21.0, "A": 0.0}}, units="C")
+        assert device_floor_max_temp(d) == pytest.approx(35.0)
+
+    def test_falls_back_when_schedule_absent(self) -> None:
+        assert device_floor_max_temp(_floor_device()) == pytest.approx(95.0)
+
+    def test_null_data_still_yields_numeric_bound(self) -> None:
+        assert isinstance(device_floor_max_temp(_NULL_DATA_FIELD_DEVICE), float)
+
+
+class TestFloorEntityMaxTemp:
+    """A 0 upper bound makes HA core reject every floor setpoint as out of range."""
+
+    @staticmethod
+    def _stub(device: WattsDevice) -> SimpleNamespace:
+        return SimpleNamespace(_device=lambda: device)
+
+    def test_max_temp_exceeds_min_temp_without_floor_max(self) -> None:
+        stub = self._stub(_floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}}))
+        assert WattsFloorClimateEntity.max_temp.fget(
+            stub
+        ) > WattsFloorClimateEntity.min_temp.fget(stub)
+
+    def test_max_temp_uses_schedule_floor_max(self) -> None:
+        d = _floor_device(schedule={"Floor": {"W": 70.0, "A": 0.0}, "FloorMax": 85.0})
+        assert WattsFloorClimateEntity.max_temp.fget(self._stub(d)) == 85.0
