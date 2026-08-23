@@ -25,12 +25,11 @@ from homeassistant.util.unit_conversion import TemperatureConverter
 from .const import (
     DOMAIN,
     HA_TO_WATTS_MODE,
-    MODEL_NAMES,
     WATTS_TO_HA_ACTION,
     WATTS_TO_HA_MODE,
 )
 from .coordinator import WattsDataUpdateCoordinator
-from .helpers import device_temperature_unit
+from .helpers import device_model_name, device_temperature_unit
 from .models import WattsDevice
 
 # ---------------------------------------------------------------------------
@@ -325,9 +324,7 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
             name=device.name,
-            model=MODEL_NAMES.get(
-                device.model_number, f"Tekmar WiFi Thermostat {device.model_number}"
-            ),
+            model=device_model_name(device),
             manufacturer="Watts Home",
         )
 
@@ -525,10 +522,7 @@ class WattsFloorClimateEntity(
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
             name=device.name,
-            model=MODEL_NAMES.get(
-                device.model_number,
-                f"Tekmar WiFi Thermostat {device.model_number}",
-            ),
+            model=device_model_name(device),
             manufacturer="Watts Home",
         )
 

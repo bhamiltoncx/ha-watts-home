@@ -1,0 +1,95 @@
+{
+  "errorNumber": 0,
+  "errorMessage": null,
+  "body": [
+    {
+      "data": {
+        "Sensors": {
+          "Sensor1": {
+            "Val": 103,
+            "Status": "Okay"
+          }
+        },
+        "State": {
+          "Op": "Off",
+          "Sub": "None"
+        },
+        "Mode": {
+          "Active": 1,
+          "Val": "Heat",
+          "Enum": ["Off", "Heat"]
+        },
+        "Target": {
+          "Active": 1,
+          "Sensor": "Sensor1",
+          "Heat": 104,
+          "Cool": null,
+          "HeatMinLimit": 40,
+          "HeatMaxLimit": 230,
+          "CoolMinLimit": null,
+          "CoolMaxLimit": null,
+          "Steps": 1
+        },
+        "HeatToAwayEnable": {
+          "Active": 1,
+          "Val": "On",
+          "Enum": ["Off", "On"]
+        },
+        "HeatToAway": {
+          "Active": 1,
+          "Val": 40,
+          "Min": 40,
+          "Max": 230,
+          "Steps": 1
+        },
+        "CoolToAwayEnable": {
+          "Active": 0,
+          "Val": "On",
+          "Enum": ["Off", "On"]
+        },
+        "CoolToAway": {
+          "Active": 0,
+          "Val": null,
+          "Min": 40,
+          "Max": 230,
+          "Steps": 1
+        },
+        "TempUnits": {
+          "Active": 1,
+          "Val": "F",
+          "Enum": ["F", "C"]
+        },
+        "Units": "Imperial",
+        "Wifi": {
+          "RSSI": -56
+        },
+        "DateTime": "2026-01-01T00:00:00Z",
+        "TZOffset": -14400
+      },
+      "isConnected": true,
+      "requestingUser": "00000000-0000-0000-0000-000000000001",
+      "deviceId": "00000000-0000-0000-0000-00000000a170",
+      "name": "Water Tank",
+      "modelId": 18,
+      "modelNumber": "170",
+      "deviceType": "Setpoint",
+      "deviceTypeId": 5,
+      "location": {
+        "locationId": "00000000-0000-0000-0000-0000000000b1",
+        "name": "Test Location",
+        "address": {
+          "address": "",
+          "address2": "",
+          "city": "",
+          "state_province": "",
+          "zipcode": "",
+          "country": "US"
+        },
+        "awayState": 0,
+        "userType": 1
+      },
+      "imageUrl": null,
+      "isShared": false
+    }
+  ]
+}

@@ -138,6 +138,7 @@ class WattsDevice(BaseModel):
     device_id: str = Field(alias="deviceId")
     name: str
     model_number: str = Field(alias="modelNumber")
+    device_type: str | None = Field(None, alias="deviceType")
     is_connected: bool = Field(alias="isConnected")
     data: WattsDeviceData | None = None
     location: WattsLocation | None = None

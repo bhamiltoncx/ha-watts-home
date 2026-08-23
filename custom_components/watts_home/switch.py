@@ -11,7 +11,8 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MODEL_NAMES
+from .const import DOMAIN
+from .helpers import device_model_name
 from .coordinator import WattsDataUpdateCoordinator
 from .models import WattsDevice
 
@@ -137,10 +138,7 @@ class WattsEmergencyHeatSwitch(
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
             name=device.name,
-            model=MODEL_NAMES.get(
-                device.model_number,
-                f"Tekmar WiFi Thermostat {device.model_number}",
-            ),
+            model=device_model_name(device),
             manufacturer="Watts Home",
         )
 
