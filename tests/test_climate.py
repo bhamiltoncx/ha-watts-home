@@ -498,3 +498,74 @@ class TestEntitySetpointBounds:
     def test_target_temperature_step_is_never_none_without_target_range(self) -> None:
         stub = self._stub(_bounds_device(target={"Heat": 68.0}))
         assert isinstance(WattsClimateEntity.target_temperature_step.fget(stub), float)
+
+
+class TestSetpointLimitFields:
+    """Setpoint controls (Tekmar 170) carry their range in Heat/CoolMin|MaxLimit."""
+
+    def test_heat_limit_fields_used_when_min_max_absent(self) -> None:
+        d = _bounds_device(
+            target={
+                "Heat": 104.0,
+                "Cool": None,
+                "HeatMinLimit": 40.0,
+                "HeatMaxLimit": 230.0,
+                "CoolMinLimit": None,
+                "CoolMaxLimit": None,
+                "Steps": 1.0,
+            }
+        )
+        assert device_min_temp(d) == 40.0
+        assert device_max_temp(d) == 230.0
+
+    def test_cool_mode_uses_cool_limit_fields(self) -> None:
+        d = _bounds_device(
+            target={"Cool": 74.0, "CoolMinLimit": 50.0, "CoolMaxLimit": 99.0},
+            mode="Cool",
+        )
+        assert device_min_temp(d) == 50.0
+        assert device_max_temp(d) == 99.0
+
+    def test_heat_cool_mode_spans_both_limit_fields(self) -> None:
+        d = _bounds_device(
+            target={
+                "Heat": 68.0,
+                "Cool": 74.0,
+                "HeatMinLimit": 40.0,
+                "HeatMaxLimit": 90.0,
+                "CoolMinLimit": 50.0,
+                "CoolMaxLimit": 99.0,
+            },
+            mode="Auto",
+        )
+        assert device_min_temp(d) == 40.0
+        assert device_max_temp(d) == 99.0
+
+    def test_target_min_max_take_precedence_over_limits(self) -> None:
+        d = _bounds_device(
+            target={
+                "Heat": 68.0,
+                "Min": 45.0,
+                "Max": 90.0,
+                "HeatMinLimit": 40.0,
+                "HeatMaxLimit": 230.0,
+            }
+        )
+        assert device_min_temp(d) == 45.0
+        assert device_max_temp(d) == 90.0
+
+    def test_null_limits_fall_back_to_ha_defaults(self) -> None:
+        d = _bounds_device(
+            target={"Cool": 74.0, "CoolMinLimit": None, "CoolMaxLimit": None},
+            mode="Cool",
+        )
+        assert device_min_temp(d) == pytest.approx(44.6)
+        assert device_max_temp(d) == pytest.approx(95.0)
+
+    def test_limits_win_over_schedule_bounds(self) -> None:
+        d = _bounds_device(
+            target={"Heat": 104.0, "HeatMinLimit": 40.0, "HeatMaxLimit": 230.0},
+            schedule={"HeatMin": 50.0, "HeatMax": 90.0},
+        )
+        assert device_min_temp(d) == 40.0
+        assert device_max_temp(d) == 230.0

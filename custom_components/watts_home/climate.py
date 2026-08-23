@@ -121,19 +121,40 @@ def device_target_temp_low(device: WattsDevice) -> float | None:
     return device.data.target.heat
 
 
-def _schedule_bounds(device: WattsDevice) -> tuple[float | None, float | None]:
-    """Settable range from the schedule, for the mode the device is in."""
-    sched = device.data.schedule if device.data else None
-    if sched is None:
-        return None, None
+def _mode_bounds(
+    device: WattsDevice,
+    heat: tuple[float | None, float | None],
+    cool: tuple[float | None, float | None],
+) -> tuple[float | None, float | None]:
+    """Pick the heat or cool range, spanning both in heat_cool."""
     mode = device_hvac_mode(device)
     if mode == HVACMode.COOL:
-        return sched.cool_min, sched.cool_max
+        return cool
     if mode == HVACMode.HEAT_COOL:
-        lows = [v for v in (sched.heat_min, sched.cool_min) if v is not None]
-        highs = [v for v in (sched.heat_max, sched.cool_max) if v is not None]
+        lows = [v for v in (heat[0], cool[0]) if v is not None]
+        highs = [v for v in (heat[1], cool[1]) if v is not None]
         return (min(lows) if lows else None, max(highs) if highs else None)
-    return sched.heat_min, sched.heat_max
+    return heat
+
+
+def _target_limits(device: WattsDevice) -> tuple[float | None, float | None]:
+    """Settable range from Target's *Limit fields, sent by setpoint controls."""
+    t = device.data.target if device.data else None
+    if t is None:
+        return None, None
+    return _mode_bounds(
+        device,
+        (t.heat_min_limit, t.heat_max_limit),
+        (t.cool_min_limit, t.cool_max_limit),
+    )
+
+
+def _schedule_bounds(device: WattsDevice) -> tuple[float | None, float | None]:
+    """Settable range from the schedule, for the mode the device is in."""
+    s = device.data.schedule if device.data else None
+    if s is None:
+        return None, None
+    return _mode_bounds(device, (s.heat_min, s.heat_max), (s.cool_min, s.cool_max))
 
 
 def _default_bound(device: WattsDevice, celsius_default: float) -> float:
@@ -149,13 +170,16 @@ def _default_bound(device: WattsDevice, celsius_default: float) -> float:
 def device_min_temp(device: WattsDevice) -> float:
     """Lowest settable setpoint.
 
-    Setpoint controls such as the Tekmar 170 send Target without Min/Max, and
-    HA core compares the requested temperature against these, so they must
-    never be None.
+    Target.Min, else the mode's Target.*Limit (what setpoint controls such as
+    the Tekmar 170 send instead), else the schedule's bound, else HA's own
+    default in the device's unit. HA core compares the requested temperature
+    against these, so they must never be None.
     """
     if device.data and device.data.target and device.data.target.min is not None:
         return device.data.target.min
-    low, _ = _schedule_bounds(device)
+    low, _ = _target_limits(device)
+    if low is None:
+        low, _ = _schedule_bounds(device)
     return low if low is not None else _default_bound(device, DEFAULT_MIN_TEMP)
 
 
@@ -163,7 +187,9 @@ def device_max_temp(device: WattsDevice) -> float:
     """Highest settable setpoint. See device_min_temp."""
     if device.data and device.data.target and device.data.target.max is not None:
         return device.data.target.max
-    _, high = _schedule_bounds(device)
+    _, high = _target_limits(device)
+    if high is None:
+        _, high = _schedule_bounds(device)
     return high if high is not None else _default_bound(device, DEFAULT_MAX_TEMP)
 
 

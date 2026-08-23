@@ -33,6 +33,10 @@ class WattsTarget(BaseModel):
     min: float | None = Field(None, alias="Min")
     max: float | None = Field(None, alias="Max")
     steps: float | None = Field(None, alias="Steps")
+    heat_min_limit: float | None = Field(None, alias="HeatMinLimit")
+    heat_max_limit: float | None = Field(None, alias="HeatMaxLimit")
+    cool_min_limit: float | None = Field(None, alias="CoolMinLimit")
+    cool_max_limit: float | None = Field(None, alias="CoolMaxLimit")
 
 
 class WattsTempUnits(BaseModel):
