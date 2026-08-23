@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.0...v1.1.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* keep the floor entity's upper setpoint bound usable ([#17](https://github.com/bhamiltoncx/ha-watts-home/issues/17)) ([412f70d](https://github.com/bhamiltoncx/ha-watts-home/commit/412f70dca25d6bd477ef22c9619cb8650c7f4060))
+* support Tekmar devices which are missing low/high setpoint ([#15](https://github.com/bhamiltoncx/ha-watts-home/issues/15)) ([cfae065](https://github.com/bhamiltoncx/ha-watts-home/commit/cfae0658dd65d5f9df3e0c48fc8548a4bc3e39ea))
+* support the Tekmar 170 Wi-Fi Setpoint Control ([#21](https://github.com/bhamiltoncx/ha-watts-home/issues/21)) ([c67c39c](https://github.com/bhamiltoncx/ha-watts-home/commit/c67c39c1c38cfce657598a9d17d73107c623c107))
+
 ## [1.1.0](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.0.1...v1.1.0) (2026-08-07)
 
 
