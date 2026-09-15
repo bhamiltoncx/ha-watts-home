@@ -30,8 +30,6 @@ _LOGGER = __import__("logging").getLogger(__name__)
 class WattsDataUpdateCoordinator(DataUpdateCoordinator[dict[str, WattsDevice]]):
     """Polls the Watts API and manages token lifecycle."""
 
-    location_id: str
-
     def __init__(
         self,
         hass: HomeAssistant,
@@ -106,14 +104,16 @@ class WattsDataUpdateCoordinator(DataUpdateCoordinator[dict[str, WattsDevice]]):
             access_token = await self._ensure_token()
             client = WattsApiClient(self._session, access_token)
             locations = await client.get_locations()
-            location = WattsApiClient.find_default_location(locations)
-            self.location_id = str(location["locationId"])
-            _LOGGER.debug(
-                "Polling location %s (%s)", location.get("name"), self.location_id
-            )
-            devices = await client.get_devices(self.location_id)
+            devices: dict[str, WattsDevice] = {}
+            for location in WattsApiClient.locations_with_devices(locations):
+                location_id = str(location["locationId"])
+                _LOGGER.debug(
+                    "Polling location %s (%s)", location.get("name"), location_id
+                )
+                for device in await client.get_devices(location_id):
+                    devices[device.device_id] = device
             _LOGGER.debug("Fetched %d device(s)", len(devices))
-            return {d.device_id: d for d in devices}
+            return devices
         except ConfigEntryAuthFailed:
             raise
         except (WattsApiError, WattsAuthError) as exc:
