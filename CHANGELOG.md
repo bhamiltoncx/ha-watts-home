@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.1...v1.1.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* poll devices from every Watts Home location ([#25](https://github.com/bhamiltoncx/ha-watts-home/issues/25)) ([dd36a37](https://github.com/bhamiltoncx/ha-watts-home/commit/dd36a37f0cd49b3df41027a99fd0ac4d6ffbea9c))
+
 ## [1.1.1](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.0...v1.1.1) (2026-08-23)
 
 
