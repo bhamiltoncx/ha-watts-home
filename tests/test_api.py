@@ -57,7 +57,7 @@ async def client():
 @pytest.fixture()
 async def location_and_devices(client):
     locations = await client.get_locations()
-    loc = WattsApiClient.find_default_location(locations)
+    loc = WattsApiClient.locations_with_devices(locations)[0]
     loc_id = str(loc.get("locationId") or loc.get("LocationId") or loc.get("id", ""))
     devices = await client.get_devices(loc_id)
     return loc_id, devices
@@ -85,10 +85,9 @@ async def test_get_locations(client) -> None:
     assert len(locations) > 0
 
 
-async def test_find_default_location(client) -> None:
+async def test_locations_with_devices(client) -> None:
     locations = await client.get_locations()
-    loc = WattsApiClient.find_default_location(locations)
-    assert loc is not None
+    assert WattsApiClient.locations_with_devices(locations)
 
 
 async def test_get_devices(location_and_devices) -> None:

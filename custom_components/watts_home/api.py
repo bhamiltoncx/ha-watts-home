@@ -145,12 +145,10 @@ class WattsApiClient:
         )
 
     @staticmethod
-    def find_default_location(locations: list[dict[str, Any]]) -> dict[str, Any]:
-        """Return the best location: default+devices first, then any with devices."""
+    def locations_with_devices(
+        locations: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         with_devices = [loc for loc in locations if loc.get("devicesCount", 0) > 0]
-        for loc in with_devices:
-            if loc.get("isDefault"):
-                return loc
-        if with_devices:
-            return with_devices[0]
-        raise WattsApiError("No location with devices found")
+        if not with_devices:
+            raise WattsApiError("No location with devices found")
+        return with_devices

@@ -97,3 +97,31 @@ async def test_bad_credentials_still_raise_auth_failed(
 
     with pytest.raises(ConfigEntryAuthFailed):
         await coord._async_update_data()
+
+
+async def test_polls_every_location_with_devices(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    locations = [
+        {"locationId": "cottage", "isDefault": False, "devicesCount": 1},
+        {"locationId": "empty", "isDefault": False, "devicesCount": 0},
+        {"locationId": "home", "isDefault": True, "devicesCount": 2},
+    ]
+    devices_by_location = {"cottage": ["c1"], "home": ["h1", "h2"]}
+    polled: list[str] = []
+
+    async def _get_locations(_self: Any) -> list[dict[str, Any]]:
+        return locations
+
+    async def _get_devices(_self: Any, location_id: str) -> list[Any]:
+        polled.append(location_id)
+        return [SimpleNamespace(device_id=d) for d in devices_by_location[location_id]]
+
+    monkeypatch.setattr(coord_mod.WattsApiClient, "get_locations", _get_locations)
+    monkeypatch.setattr(coord_mod.WattsApiClient, "get_devices", _get_devices)
+    coord = _coordinator({"access_token": "t", "expires_on": 9999999999})
+
+    data = await coord._async_update_data()
+
+    assert polled == ["cottage", "home"]
+    assert set(data) == {"c1", "h1", "h2"}
