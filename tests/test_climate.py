@@ -417,7 +417,7 @@ class TestSetpointBounds:
         )
         assert device_min_temp(d) == 40.0
         assert device_max_temp(d) == 95.0
-        assert device_target_temp_step(d) == 1.0
+        assert device_target_temp_step(d, UnitOfTemperature.FAHRENHEIT) == 1.0
 
     def test_heat_mode_falls_back_to_schedule_heat_range(self) -> None:
         d = _bounds_device(
@@ -469,17 +469,24 @@ class TestSetpointBounds:
 
     def test_step_falls_back_to_one_when_absent(self) -> None:
         d = _bounds_device(target={"Heat": 68.0})
-        assert device_target_temp_step(d) == 1.0
+        assert device_target_temp_step(d, UnitOfTemperature.FAHRENHEIT) == 1.0
 
     def test_null_data_still_yields_numeric_bounds(self) -> None:
         assert isinstance(device_min_temp(_NULL_DATA_FIELD_DEVICE), float)
         assert isinstance(device_max_temp(_NULL_DATA_FIELD_DEVICE), float)
-        assert isinstance(device_target_temp_step(_NULL_DATA_FIELD_DEVICE), float)
+        assert isinstance(
+            device_target_temp_step(
+                _NULL_DATA_FIELD_DEVICE, UnitOfTemperature.FAHRENHEIT
+            ),
+            float,
+        )
 
     def test_null_target_still_yields_numeric_bounds(self) -> None:
         assert isinstance(device_min_temp(_NULL_DEVICE), float)
         assert isinstance(device_max_temp(_NULL_DEVICE), float)
-        assert isinstance(device_target_temp_step(_NULL_DEVICE), float)
+        assert isinstance(
+            device_target_temp_step(_NULL_DEVICE, UnitOfTemperature.FAHRENHEIT), float
+        )
 
 
 class TestEntitySetpointBounds:
@@ -487,7 +494,10 @@ class TestEntitySetpointBounds:
 
     @staticmethod
     def _stub(device: WattsDevice) -> SimpleNamespace:
-        return SimpleNamespace(_device=lambda: device)
+        return SimpleNamespace(
+            _device=lambda: device,
+            hass=_hass_using(UnitOfTemperature.FAHRENHEIT),
+        )
 
     def test_min_temp_is_never_none_without_target_range(self) -> None:
         stub = self._stub(_bounds_device(target={"Heat": 68.0}))
@@ -751,7 +761,10 @@ class TestSetpointControl170:
         assert device_hvac_modes(setpoint_device) == [HVACMode.OFF, HVACMode.HEAT]
 
     def test_step_is_one_degree(self, setpoint_device: WattsDevice) -> None:
-        assert device_target_temp_step(setpoint_device) == 1.0
+        assert (
+            device_target_temp_step(setpoint_device, UnitOfTemperature.FAHRENHEIT)
+            == 1.0
+        )
 
     def test_the_held_setpoint_is_settable(self, setpoint_device: WattsDevice) -> None:
         """HA core rejects a setpoint outside [min_temp, max_temp]."""
@@ -842,3 +855,55 @@ class TestDisplayPrecision:
             entity.precision,  # type: ignore[attr-defined]
         )
         assert shown == 74.0
+
+
+# ---------------------------------------------------------------------------
+# Setpoint step must be expressed in the unit HA displays
+# ---------------------------------------------------------------------------
+
+
+class TestTargetTempStepUnits:
+    """HA core publishes target_temperature_step unconverted.
+
+    Unlike min_temp/max_temp, which it passes through show_temp, the step is
+    copied straight into the state and read in the *system* unit. A Celsius
+    device's 0.5 step would otherwise be offered as 0.5 °F — a setpoint the
+    thermostat cannot hold.
+    """
+
+    def test_celsius_half_step_is_nine_tenths_of_a_fahrenheit_degree(self) -> None:
+        d = _celsius_device(room=22.5)
+        assert device_target_temp_step(
+            d, UnitOfTemperature.FAHRENHEIT
+        ) == pytest.approx(0.9)
+
+    def test_step_is_untouched_when_the_units_already_match(self) -> None:
+        d = _celsius_device(room=22.5)
+        assert device_target_temp_step(d, UnitOfTemperature.CELSIUS) == pytest.approx(
+            0.5
+        )
+
+    def test_fahrenheit_device_on_a_fahrenheit_system_is_unchanged(self) -> None:
+        d = _bounds_device(target={"Heat": 68.0, "Steps": 1.0})
+        assert device_target_temp_step(
+            d, UnitOfTemperature.FAHRENHEIT
+        ) == pytest.approx(1.0)
+
+    def test_missing_step_falls_back_to_one_device_degree(self) -> None:
+        """The fallback is 1° in the device's unit, so it converts too."""
+        d = _bounds_device(target={"Heat": 21.0}, units="C")
+        assert device_target_temp_step(
+            d, UnitOfTemperature.FAHRENHEIT
+        ) == pytest.approx(1.8)
+
+    def test_entity_converts_to_the_system_unit(self) -> None:
+        entity = WattsClimateEntity.__new__(WattsClimateEntity)
+        entity._device = lambda: _celsius_device(room=22.5)  # type: ignore[attr-defined]
+        entity.hass = _hass_using(UnitOfTemperature.FAHRENHEIT)  # type: ignore[attr-defined]
+        assert entity.target_temperature_step == pytest.approx(0.9)  # type: ignore[attr-defined]
+
+    def test_floor_entity_converts_its_step_too(self) -> None:
+        entity = WattsFloorClimateEntity.__new__(WattsFloorClimateEntity)
+        entity._device = lambda: _floor_device(units="C")  # type: ignore[attr-defined]
+        entity.hass = _hass_using(UnitOfTemperature.FAHRENHEIT)  # type: ignore[attr-defined]
+        assert entity.target_temperature_step == pytest.approx(1.8)  # type: ignore[attr-defined]

@@ -200,10 +200,29 @@ def device_max_temp(device: WattsDevice) -> float:
     return high if high is not None else _default_bound(device, DEFAULT_MAX_TEMP)
 
 
-def device_target_temp_step(device: WattsDevice) -> float:
+def device_target_temp_step(device: WattsDevice, display_unit: str) -> float:
+    """Setpoint increment, converted into the unit HA displays.
+
+    HA core copies target_temperature_step into the state unconverted, so it is
+    read in the system unit — unlike min_temp/max_temp, which it converts. The
+    step is an interval, so it must not pick up Celsius/Fahrenheit's zero offset.
+    """
+    step = 1.0
     if device.data and device.data.target and device.data.target.steps is not None:
-        return device.data.target.steps
-    return 1.0
+        step = device.data.target.steps
+    return device_temp_interval(device, step, display_unit)
+
+
+def device_temp_interval(
+    device: WattsDevice, interval: float, display_unit: str
+) -> float:
+    """Convert an interval from the device's unit into `display_unit`."""
+    native_unit = device_temperature_unit(device)
+    if native_unit == display_unit:
+        return interval
+    return float(
+        TemperatureConverter.convert_interval(interval, native_unit, display_unit)
+    )
 
 
 def device_floor_max_temp(device: WattsDevice) -> float:
@@ -392,7 +411,9 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
 
     @property
     def target_temperature_step(self) -> float:
-        return device_target_temp_step(self._device())
+        return device_target_temp_step(
+            self._device(), self.hass.config.units.temperature_unit
+        )
 
     @property
     def temperature_unit(self) -> str:
@@ -599,7 +620,9 @@ class WattsFloorClimateEntity(
 
     @property
     def target_temperature_step(self) -> float:
-        return 1.0
+        return device_temp_interval(
+            self._device(), 1.0, self.hass.config.units.temperature_unit
+        )
 
     @property
     def temperature_unit(self) -> str:
