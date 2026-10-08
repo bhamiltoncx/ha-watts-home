@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 from homeassistant.components.climate import ClimateEntityFeature, HVACAction, HVACMode
 from homeassistant.const import UnitOfTemperature
+from homeassistant.helpers.temperature import display_temp
 
 from custom_components.watts_home.models import WattsDevice
 
@@ -758,3 +759,86 @@ class TestSetpointControl170:
         assert target is not None
         assert device_min_temp(setpoint_device) <= target
         assert target <= device_max_temp(setpoint_device)
+
+
+# ---------------------------------------------------------------------------
+# Display precision — a Celsius-configured device reports half-degree steps
+# ---------------------------------------------------------------------------
+
+
+def _celsius_device(*, room: float, heat: float = 21.0) -> WattsDevice:
+    """A device set to Celsius, which the API reports in 0.5° steps."""
+    return WattsDevice.model_validate(
+        {
+            "deviceId": "celsius-1",
+            "name": "Office",
+            "modelNumber": "561",
+            "isConnected": True,
+            "data": {
+                "Mode": {"Val": "Heat", "Enum": ["Off", "Heat"]},
+                "TempUnits": {"Val": "C"},
+                "Sensors": {"Room": {"Val": room, "Status": "Okay"}},
+                "Target": {"Sensor": "Room", "Heat": heat, "Steps": 0.5},
+            },
+        }
+    )
+
+
+def _hass_using(unit: str) -> SimpleNamespace:
+    return SimpleNamespace(
+        config=SimpleNamespace(units=SimpleNamespace(temperature_unit=unit))
+    )
+
+
+class TestDisplayPrecision:
+    """HA core rounds current_temperature to `precision` before publishing it.
+
+    Its default is whole degrees whenever the *system* unit is Fahrenheit, which
+    silently discards the half-degrees a Celsius-configured device reports.
+    """
+
+    @staticmethod
+    def _entity(cls: type, device: WattsDevice) -> object:
+        entity = cls.__new__(cls)
+        entity._device = lambda: device  # type: ignore[attr-defined]
+        return entity
+
+    def test_half_degree_reading_survives_on_a_fahrenheit_install(self) -> None:
+        entity = self._entity(WattsClimateEntity, _celsius_device(room=22.5))
+        shown = display_temp(
+            _hass_using(UnitOfTemperature.FAHRENHEIT),
+            entity.current_temperature,  # type: ignore[attr-defined]
+            entity.temperature_unit,  # type: ignore[attr-defined]
+            entity.precision,  # type: ignore[attr-defined]
+        )
+        assert shown == pytest.approx(72.5)
+
+    def test_floor_entity_keeps_half_degrees_too(self) -> None:
+        d = _floor_device(
+            schedule={"Floor": {"W": 21.0, "A": 0.0}, "FloorMax": 29.0}, units="C"
+        )
+        entity = self._entity(WattsFloorClimateEntity, d)
+        shown = display_temp(
+            _hass_using(UnitOfTemperature.FAHRENHEIT),
+            entity.current_temperature,  # type: ignore[attr-defined]
+            entity.temperature_unit,  # type: ignore[attr-defined]
+            entity.precision,  # type: ignore[attr-defined]
+        )
+        assert shown == pytest.approx(161.6)
+
+    def test_whole_degree_fahrenheit_reading_is_unchanged(self) -> None:
+        """The common case must not gain spurious decimals."""
+        entity = self._entity(
+            WattsClimateEntity,
+            _sensor_device(
+                sensors={"Room": {"Val": 74.0, "Status": "Okay"}},
+                target={"Sensor": "Room", "Heat": 70.0},
+            ),
+        )
+        shown = display_temp(
+            _hass_using(UnitOfTemperature.FAHRENHEIT),
+            entity.current_temperature,  # type: ignore[attr-defined]
+            entity.temperature_unit,  # type: ignore[attr-defined]
+            entity.precision,  # type: ignore[attr-defined]
+        )
+        assert shown == 74.0

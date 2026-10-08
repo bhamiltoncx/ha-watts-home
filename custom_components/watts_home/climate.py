@@ -15,7 +15,7 @@ from homeassistant.components.climate import (
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
+from homeassistant.const import ATTR_TEMPERATURE, PRECISION_TENTHS, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -311,6 +311,10 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
 
     _attr_has_entity_name = True
     _attr_name = None
+    # HA core rounds readings to this before publishing them, and its default is
+    # whole degrees on a Fahrenheit system — which discards the half-degrees a
+    # Celsius-configured device reports.
+    _attr_precision = PRECISION_TENTHS
 
     def __init__(
         self,
@@ -513,6 +517,7 @@ class WattsFloorClimateEntity(
     _attr_translation_key = "floor"
     _attr_hvac_modes = [HVACMode.HEAT]
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+    _attr_precision = PRECISION_TENTHS
 
     def __init__(self, coordinator: WattsDataUpdateCoordinator, device_id: str) -> None:
         super().__init__(coordinator)
