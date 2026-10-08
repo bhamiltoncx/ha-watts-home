@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.3](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.2...v1.1.3) (2026-10-08)
+
+
+### Bug Fixes
+
+* express the setpoint step in the unit HA displays ([#28](https://github.com/bhamiltoncx/ha-watts-home/issues/28)) ([6aeb9a0](https://github.com/bhamiltoncx/ha-watts-home/commit/6aeb9a06928c54d3ea11eb56cf656c526a1fdab7))
+* keep sub-degree readings on a Fahrenheit system ([#27](https://github.com/bhamiltoncx/ha-watts-home/issues/27)) ([be01d61](https://github.com/bhamiltoncx/ha-watts-home/commit/be01d612040dc4c622007250fcceb6b9e0993663))
+
 ## [1.1.2](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.1...v1.1.2) (2026-09-15)
 
 
