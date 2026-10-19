@@ -27,6 +27,7 @@ class _FakeClient:
                 "name": loc_id,
                 "devicesCount": len(devices),
                 "address": {"city": "Springfield"},
+                "ownerId": "owner-uuid",
             }
             for loc_id, devices in self._devices.items()
         ]
@@ -45,7 +46,9 @@ def _entry(client: _FakeClient) -> SimpleNamespace:
             "password": "pw",
             "access_token": "at",
             "refresh_token": "rt",
-            "scan_interval": 60,
+            "id_token": "jwt-with-email-and-name",
+            "client_info": "uid",
+            "scan_interval": 90,
         },
         runtime_data=SimpleNamespace(async_get_client=_get_client),
     )
@@ -76,15 +79,13 @@ async def test_redacts_credentials_and_identifiers() -> None:
 
     diag = await async_get_config_entry_diagnostics(None, _entry(client))
 
-    entry = diag["entry"]
-    for key in ("username", "password", "access_token", "refresh_token"):
-        assert entry[key] == REDACTED
-    assert entry["scan_interval"] == 60
+    assert diag["entry"] == {"scan_interval": 90}
 
     location = diag["locations"][0]
     assert location["locationId"] == REDACTED
     assert location["name"] == REDACTED
     assert location["address"] == REDACTED
+    assert location["ownerId"] == REDACTED
     device = location["devices"][0]
     assert device["deviceId"] == REDACTED
     assert device["name"] == REDACTED

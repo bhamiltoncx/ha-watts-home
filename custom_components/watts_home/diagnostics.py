@@ -6,20 +6,17 @@ from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from .api import WattsApiClient
+from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
 
 TO_REDACT = {
-    CONF_USERNAME,
-    CONF_PASSWORD,
-    "access_token",
-    "refresh_token",
     "address",
     "deviceId",
     "locationId",
     "name",
+    "ownerId",
     "requestingUser",
 }
 
@@ -33,6 +30,13 @@ async def async_get_config_entry_diagnostics(
     locations = await client.get_locations()
     for location in WattsApiClient.locations_with_devices(locations):
         location["devices"] = await client.get_raw_devices(str(location["locationId"]))
-    return async_redact_data(
-        {"entry": dict(entry.data), "locations": locations}, TO_REDACT
-    )
+    # Allowlisted: entry data also holds an id_token carrying the account's
+    # email and full name.
+    return {
+        "entry": {
+            CONF_SCAN_INTERVAL: entry.data.get(
+                CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+            )
+        },
+        "locations": async_redact_data(locations, TO_REDACT),
+    }
