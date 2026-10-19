@@ -15,6 +15,8 @@ Native Home Assistant custom component for Watts Home / Tekmar thermostats (mode
 
 Capabilities are read dynamically from the API, so any future Tekmar model using the same API should work without code changes.
 
+If you have a Tekmar device that isn't supported, open an issue and attach the integration's diagnostics (**Settings → Devices & services → Watts Home → ⋮ → Download diagnostics**). They include the raw API payload for every device, with IDs, names and addresses redacted and no account credentials.
+
 ## Entities
 
 ### Climate
