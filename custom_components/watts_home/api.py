@@ -81,14 +81,17 @@ class WattsApiClient:
         result: list[dict[str, Any]] = await self._get("/Location")
         return result
 
-    async def get_devices(self, location_id: str) -> list[WattsDevice]:
+    async def get_raw_devices(self, location_id: str) -> list[dict[str, Any]]:
         raw = await self._get(f"/Location/{location_id}/Devices")
         if not isinstance(raw, list):
             raise WattsApiError(
                 f"Expected list from /Devices, got {type(raw).__name__}"
             )
+        return raw
+
+    async def get_devices(self, location_id: str) -> list[WattsDevice]:
         devices: list[WattsDevice] = []
-        for item in raw:
+        for item in await self.get_raw_devices(location_id):
             try:
                 devices.append(WattsDevice.model_validate(item))
             except ValidationError as exc:

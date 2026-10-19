@@ -47,9 +47,7 @@ rules:
 
   # Gold
   devices: done
-  diagnostics:
-    status: todo
-    comment: No diagnostics platform implemented.
+  diagnostics: done
   discovery:
     status: exempt
     comment: Cloud polling integration; no local discovery mechanism.
