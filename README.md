@@ -1,5 +1,7 @@
 # Watts Home (Tekmar) — Home Assistant Integration
 
+[![HACS](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://hacs.xyz)
+
 Native Home Assistant custom component for Watts Home / Tekmar thermostats (models 561, 562, 563, 564). Based on and alternative to the [creamy-waha](https://github.com/AlbinoDrought/creamy-waha) MQTT bridge with a direct cloud-polling integration — no Docker, no MQTT broker required.
 
 ## Supported Devices
@@ -68,9 +70,11 @@ After every write operation, the integration calls `/Device/{id}/Refresh` to for
 
 ## Installation
 
-### HACS
+### HACS (recommended)
 
-Add this repository as a custom repository in HACS, then install **Watts Home (Tekmar)**.
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bhamiltoncx&repository=ha-watts-home&category=integration)
+
+Or in HACS, search for **Watts Home (Tekmar)** and click **Download**.
 
 ### Manual
 
@@ -91,10 +95,12 @@ Restart Home Assistant, then go to **Settings → Integrations → Add → Watts
 ## Removal
 
 1. Go to **Settings → Integrations**, find **Watts Home**, and click **Delete**.
-2. Remove the component files (if manually installed):
-   ```bash
-   rm -rf /homeassistant/custom_components/watts_home
-   ```
+2. Remove the component files:
+   - **HACS:** open **Watts Home (Tekmar)** in HACS and select **Remove**.
+   - **Manual:**
+     ```bash
+     rm -rf /homeassistant/custom_components/watts_home
+     ```
 3. Restart Home Assistant.
 
 ## Credits
