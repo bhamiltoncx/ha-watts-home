@@ -19,6 +19,7 @@ TO_REDACT = {
     "address",
     "deviceId",
     "locationId",
+    "name",
     "requestingUser",
 }
 
@@ -31,9 +32,7 @@ async def async_get_config_entry_diagnostics(
     client = await entry.runtime_data.async_get_client()
     locations = await client.get_locations()
     for location in WattsApiClient.locations_with_devices(locations):
-        location["devices"] = await client.get_raw_devices(
-            str(location["locationId"])
-        )
+        location["devices"] = await client.get_raw_devices(str(location["locationId"]))
     return async_redact_data(
         {"entry": dict(entry.data), "locations": locations}, TO_REDACT
     )

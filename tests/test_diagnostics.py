@@ -64,11 +64,11 @@ async def test_includes_raw_payloads_from_every_location() -> None:
 
     diag = await async_get_config_entry_diagnostics(None, _entry(client))
 
-    by_name = {loc["name"]: loc for loc in diag["locations"]}
-    assert len(by_name["home"]["devices"]) == 12
-    assert by_name["cottage"]["devices"][0]["modelNumber"] == "170"
-    assert by_name["cottage"]["devices"][0]["data"]["UnmodelledField"] == {"Val": 1}
-    assert "devices" not in by_name["empty"]
+    home, cottage, empty = diag["locations"]
+    assert len(home["devices"]) == 12
+    assert cottage["devices"][0]["modelNumber"] == "170"
+    assert cottage["devices"][0]["data"]["UnmodelledField"] == {"Val": 1}
+    assert "devices" not in empty
 
 
 async def test_redacts_credentials_and_identifiers() -> None:
@@ -83,10 +83,13 @@ async def test_redacts_credentials_and_identifiers() -> None:
 
     location = diag["locations"][0]
     assert location["locationId"] == REDACTED
+    assert location["name"] == REDACTED
     assert location["address"] == REDACTED
     device = location["devices"][0]
     assert device["deviceId"] == REDACTED
+    assert device["name"] == REDACTED
     assert device["requestingUser"] == REDACTED
     assert device["location"]["locationId"] == REDACTED
+    assert device["location"]["name"] == REDACTED
     assert device["location"]["address"] == REDACTED
     assert device["modelNumber"] == "561"
