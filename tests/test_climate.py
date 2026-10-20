@@ -877,6 +877,13 @@ class TestTargetTempStepUnits:
             d, UnitOfTemperature.FAHRENHEIT
         ) == pytest.approx(0.9)
 
+    def test_conversion_avoids_deprecated_helpers(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        d = _celsius_device(room=22.5)
+        device_target_temp_step(d, UnitOfTemperature.FAHRENHEIT)
+        assert "deprecated" not in caplog.text
+
     def test_step_is_untouched_when_the_units_already_match(self) -> None:
         d = _celsius_device(room=22.5)
         assert device_target_temp_step(d, UnitOfTemperature.CELSIUS) == pytest.approx(

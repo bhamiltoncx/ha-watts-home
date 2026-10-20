@@ -20,7 +20,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.util.unit_conversion import TemperatureConverter
+from homeassistant.util.unit_conversion import (
+    TemperatureConverter,
+    TemperatureDeltaConverter,
+)
 
 from .const import (
     DOMAIN,
@@ -220,9 +223,7 @@ def device_temp_interval(
     native_unit = device_temperature_unit(device)
     if native_unit == display_unit:
         return interval
-    return float(
-        TemperatureConverter.convert_interval(interval, native_unit, display_unit)
-    )
+    return float(TemperatureDeltaConverter.convert(interval, native_unit, display_unit))
 
 
 def device_floor_max_temp(device: WattsDevice) -> float:
