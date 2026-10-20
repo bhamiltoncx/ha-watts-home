@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.3...v1.2.0) (2026-10-20)
+
+
+### Features
+
+* add config entry diagnostics ([#33](https://github.com/bhamiltoncx/ha-watts-home/issues/33)) ([840ffb6](https://github.com/bhamiltoncx/ha-watts-home/commit/840ffb62c51732bea82adb42da67de367d730997))
+
+
+### Bug Fixes
+
+* convert setpoint steps with TemperatureDeltaConverter ([#35](https://github.com/bhamiltoncx/ha-watts-home/issues/35)) ([01c47ed](https://github.com/bhamiltoncx/ha-watts-home/commit/01c47ed58ededf9e323f140829d0494e49bc8b62))
+
 ## [1.1.3](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.2...v1.1.3) (2026-10-08)
 
 
