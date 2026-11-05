@@ -377,7 +377,7 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         return device_hvac_action(self._device())
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         return device_current_temperature(self._device())
 
     @property
@@ -385,19 +385,19 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         return device_current_humidity(self._device())
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         if self.hvac_mode == HVACMode.HEAT_COOL:
             return None
         return device_target_temperature(self._device())
 
     @property
-    def target_temperature_high(self) -> float | None:
+    def native_target_temperature_high(self) -> float | None:
         if self.hvac_mode != HVACMode.HEAT_COOL:
             return None
         return device_target_temp_high(self._device())
 
     @property
-    def target_temperature_low(self) -> float | None:
+    def native_target_temperature_low(self) -> float | None:
         if self.hvac_mode != HVACMode.HEAT_COOL:
             return None
         return device_target_temp_low(self._device())
@@ -417,8 +417,16 @@ class WattsClimateEntity(CoordinatorEntity[WattsDataUpdateCoordinator], ClimateE
         )
 
     @property
-    def temperature_unit(self) -> str:
+    def native_temperature_unit(self) -> str:
         return device_temperature_unit(self._device())
+
+    # HA before 2026.11 reads the pre-native names; defining both keeps it
+    # working without tripping the 2026.11 deprecation warning.
+    current_temperature = native_current_temperature
+    target_temperature = native_target_temperature
+    target_temperature_high = native_target_temperature_high
+    target_temperature_low = native_target_temperature_low
+    temperature_unit = native_temperature_unit
 
     @property
     def fan_mode(self) -> str | None:
@@ -597,7 +605,7 @@ class WattsFloorClimateEntity(
         return HVACAction.IDLE
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         d = self._device()
         if d.data and d.data.sensors and d.data.sensors.floor:
             f = d.data.sensors.floor
@@ -605,7 +613,7 @@ class WattsFloorClimateEntity(
         return None
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         d = self._device()
         if d.data and d.data.schedule and d.data.schedule.floor:
             return d.data.schedule.floor.w
@@ -626,8 +634,13 @@ class WattsFloorClimateEntity(
         )
 
     @property
-    def temperature_unit(self) -> str:
+    def native_temperature_unit(self) -> str:
         return device_temperature_unit(self._device())
+
+    # See WattsClimateEntity.
+    current_temperature = native_current_temperature
+    target_temperature = native_target_temperature
+    temperature_unit = native_temperature_unit
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         pass

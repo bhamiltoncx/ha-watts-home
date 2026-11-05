@@ -820,8 +820,8 @@ class TestDisplayPrecision:
         entity = self._entity(WattsClimateEntity, _celsius_device(room=22.5))
         shown = display_temp(
             _hass_using(UnitOfTemperature.FAHRENHEIT),
-            entity.current_temperature,  # type: ignore[attr-defined]
-            entity.temperature_unit,  # type: ignore[attr-defined]
+            entity.native_current_temperature,  # type: ignore[attr-defined]
+            entity.native_temperature_unit,  # type: ignore[attr-defined]
             entity.precision,  # type: ignore[attr-defined]
         )
         assert shown == pytest.approx(72.5)
@@ -833,8 +833,8 @@ class TestDisplayPrecision:
         entity = self._entity(WattsFloorClimateEntity, d)
         shown = display_temp(
             _hass_using(UnitOfTemperature.FAHRENHEIT),
-            entity.current_temperature,  # type: ignore[attr-defined]
-            entity.temperature_unit,  # type: ignore[attr-defined]
+            entity.native_current_temperature,  # type: ignore[attr-defined]
+            entity.native_temperature_unit,  # type: ignore[attr-defined]
             entity.precision,  # type: ignore[attr-defined]
         )
         assert shown == pytest.approx(161.6)
@@ -850,8 +850,8 @@ class TestDisplayPrecision:
         )
         shown = display_temp(
             _hass_using(UnitOfTemperature.FAHRENHEIT),
-            entity.current_temperature,  # type: ignore[attr-defined]
-            entity.temperature_unit,  # type: ignore[attr-defined]
+            entity.native_current_temperature,  # type: ignore[attr-defined]
+            entity.native_temperature_unit,  # type: ignore[attr-defined]
             entity.precision,  # type: ignore[attr-defined]
         )
         assert shown == 74.0
@@ -914,3 +914,32 @@ class TestTargetTempStepUnits:
         entity._device = lambda: _floor_device(units="C")  # type: ignore[attr-defined]
         entity.hass = _hass_using(UnitOfTemperature.FAHRENHEIT)  # type: ignore[attr-defined]
         assert entity.target_temperature_step == pytest.approx(1.8)  # type: ignore[attr-defined]
+
+
+class TestLegacyTemperatureNames:
+    """HA before 2026.11 reads the pre-native names, so they must stay aliased."""
+
+    @pytest.mark.parametrize(
+        ("cls", "names"),
+        [
+            (
+                WattsClimateEntity,
+                [
+                    "current_temperature",
+                    "target_temperature",
+                    "target_temperature_high",
+                    "target_temperature_low",
+                    "temperature_unit",
+                ],
+            ),
+            (
+                WattsFloorClimateEntity,
+                ["current_temperature", "target_temperature", "temperature_unit"],
+            ),
+        ],
+    )
+    def test_legacy_name_aliases_native_property(
+        self, cls: type, names: list[str]
+    ) -> None:
+        for name in names:
+            assert vars(cls)[name] is vars(cls)[f"native_{name}"]
