@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Home Assistant 2026.6 requires **Python 3.14.2 or newer**, so the development
+Home Assistant requires **Python 3.14.2 or newer**, so the development
 environment needs a matching interpreter.
 
 ## Setup
@@ -13,8 +13,12 @@ python3 -m venv .venv
 ```
 
 `requirements-dev.txt` pulls in Home Assistant, pytest, and the async test
-helpers via `pytest-homeassistant-custom-component`, plus the integration's own
-runtime dependencies (`curl_cffi`, `pydantic`). `.venv/` is gitignored.
+helpers via `pytest-homeassistant`, plus the integration's own runtime
+dependencies (`curl_cffi`, `pydantic`). `.venv/` is gitignored.
+
+`pytest-homeassistant` pins Home Assistant exactly, so upgrading Home Assistant
+means bumping its pin in `requirements-dev.txt`. Don't install it alongside
+`pytest-homeassistant-custom-component`, which provides overlapping fixtures.
 
 ## Running tests
 
