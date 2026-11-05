@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.2.0...v1.2.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* provide the native climate temperature properties ([#38](https://github.com/bhamiltoncx/ha-watts-home/issues/38)) ([f04a10d](https://github.com/bhamiltoncx/ha-watts-home/commit/f04a10d05b012ff3fbb7a54d8864bb43c8c777ab))
+
 ## [1.2.0](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.1.3...v1.2.0) (2026-10-20)
 
 
