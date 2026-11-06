@@ -8,7 +8,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, PERCENTAGE, UnitOfEnergy
+from homeassistant.const import EntityCategory, PERCENTAGE, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -299,11 +299,11 @@ class WattsFloorMaxSensor(_WattsSensor):
 
 
 class WattsEnergyHeatSensor(_WattsSensor):
-    """Daily heating energy (Energy.Heat)."""
+    """Daily heating run time in hours (Energy.Heat), per the tekmar manual."""
 
-    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_device_class = SensorDeviceClass.DURATION
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
-    _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
     _attr_translation_key = "energy_heat_today"
 
     def __init__(self, coordinator: WattsDataUpdateCoordinator, device_id: str) -> None:
@@ -319,11 +319,11 @@ class WattsEnergyHeatSensor(_WattsSensor):
 
 
 class WattsEnergyCoolSensor(_WattsSensor):
-    """Daily cooling energy (Energy.Cool)."""
+    """Daily cooling run time in hours (Energy.Cool), per the tekmar manual."""
 
-    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_device_class = SensorDeviceClass.DURATION
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
-    _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
     _attr_translation_key = "energy_cool_today"
 
     def __init__(self, coordinator: WattsDataUpdateCoordinator, device_id: str) -> None:

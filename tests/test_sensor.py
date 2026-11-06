@@ -281,3 +281,14 @@ class TestEnergySensors:
         assert set(sensors) == {"energy_heat_today", "energy_cool_today"}
         assert sensors["energy_heat_today"].native_value == d.data.energy.heat.daily[-1]
         assert sensors["energy_cool_today"].native_value == d.data.energy.cool.daily[-1]
+
+    def test_usage_is_runtime_hours_not_energy(
+        self, devices: list[WattsDevice]
+    ) -> None:
+        from homeassistant.components.sensor import SensorDeviceClass
+        from homeassistant.const import UnitOfTime
+
+        sensors = _energy_sensors(devices, _by_model(devices, "562"))
+        for sensor in sensors.values():
+            assert sensor.device_class == SensorDeviceClass.DURATION
+            assert sensor.native_unit_of_measurement == UnitOfTime.HOURS
