@@ -75,25 +75,15 @@ async def async_setup_entry(
                     known_entity_ids.add(uid)
                     new.append(WattsFloorMaxSensor(coordinator, device_id))
 
-            # Energy heat today (API field: Energy.Cool — labels are swapped)
-            if (
-                device.data
-                and device.data.energy
-                and device.data.energy.cool
-                and device.data.energy.cool.daily
-            ):
+            energy = device.data.energy if device.data else None
+
+            if energy and energy.heat and energy.heat.daily:
                 uid = f"{device_id}_energy_heat_today"
                 if uid not in known_entity_ids:
                     known_entity_ids.add(uid)
                     new.append(WattsEnergyHeatSensor(coordinator, device_id))
 
-            # Energy cool today (API field: Energy.Heat — labels are swapped)
-            if (
-                device.data
-                and device.data.energy
-                and device.data.energy.heat
-                and device.data.energy.heat.daily
-            ):
+            if energy and energy.cool and energy.cool.daily:
                 uid = f"{device_id}_energy_cool_today"
                 if uid not in known_entity_ids:
                     known_entity_ids.add(uid)
@@ -309,7 +299,7 @@ class WattsFloorMaxSensor(_WattsSensor):
 
 
 class WattsEnergyHeatSensor(_WattsSensor):
-    """Daily heating energy. Note: the API field is Energy.Cool (swapped)."""
+    """Daily heating energy (Energy.Heat)."""
 
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
@@ -323,13 +313,13 @@ class WattsEnergyHeatSensor(_WattsSensor):
     @property
     def native_value(self) -> float | None:
         d = self._device()
-        if d.data and d.data.energy and d.data.energy.cool and d.data.energy.cool.daily:
-            return d.data.energy.cool.daily[-1]
+        if d.data and d.data.energy and d.data.energy.heat and d.data.energy.heat.daily:
+            return d.data.energy.heat.daily[-1]
         return None
 
 
 class WattsEnergyCoolSensor(_WattsSensor):
-    """Daily cooling energy. Note: the API field is Energy.Heat (swapped)."""
+    """Daily cooling energy (Energy.Cool)."""
 
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
@@ -343,6 +333,6 @@ class WattsEnergyCoolSensor(_WattsSensor):
     @property
     def native_value(self) -> float | None:
         d = self._device()
-        if d.data and d.data.energy and d.data.energy.heat and d.data.energy.heat.daily:
-            return d.data.energy.heat.daily[-1]
+        if d.data and d.data.energy and d.data.energy.cool and d.data.energy.cool.daily:
+            return d.data.energy.cool.daily[-1]
         return None

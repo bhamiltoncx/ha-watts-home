@@ -32,8 +32,8 @@ One `climate` entity per thermostat with heat, cool, auto, fan-only, and off mod
 | Humidity | `sensor` | RH sensor present | Relative humidity (model 563) |
 | Floor Temperature | `sensor` | Floor probe present | Radiant floor slab temperature |
 | Floor Max | `sensor` (diagnostic) | Floor probe present | Hardware upper limit for floor temperature |
-| Heat Today | `sensor` | Always | Daily heating energy (kWh, `total_increasing`) |
-| Cool Today | `sensor` | Always | Daily cooling energy (kWh, `total_increasing`) |
+| Heat Today | `sensor` | Heat usage reported | Daily heating energy (kWh, `total_increasing`) |
+| Cool Today | `sensor` | Cool usage reported (562/563) | Daily cooling energy (kWh, `total_increasing`) |
 
 ### Binary Sensors
 

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -232,3 +234,50 @@ class TestNullDataSensor:
         )
         # 2 from fixture + 0 from null device
         assert rh_count == 2
+
+
+def _setup_sensors(devices: list[WattsDevice]) -> list:
+    from custom_components.watts_home.sensor import async_setup_entry
+
+    coordinator = SimpleNamespace(
+        data={d.device_id: d for d in devices},
+        last_update_success=True,
+        async_add_listener=lambda _cb: lambda: None,
+    )
+    entry = SimpleNamespace(runtime_data=coordinator, async_on_unload=lambda _f: None)
+    added: list = []
+    asyncio.run(async_setup_entry(None, entry, added.extend))
+    return added
+
+
+def _energy_sensors(devices: list[WattsDevice], device: WattsDevice) -> dict:
+    return {
+        e.translation_key: e
+        for e in _setup_sensors(devices)
+        if e._device_id == device.device_id
+        and e.translation_key in ("energy_heat_today", "energy_cool_today")
+    }
+
+
+class TestEnergySensors:
+    def test_heat_only_561_gets_heat_sensor_only(
+        self, devices: list[WattsDevice]
+    ) -> None:
+        d = _by_model(devices, "561")
+        sensors = _energy_sensors(devices, d)
+        assert set(sensors) == {"energy_heat_today"}
+        assert sensors["energy_heat_today"].native_value == d.data.energy.heat.daily[-1]
+
+    def test_562_heat_and_cool_read_matching_channels(
+        self, devices: list[WattsDevice]
+    ) -> None:
+        d = next(
+            d
+            for d in devices
+            if d.model_number == "562"
+            and d.data.energy.heat.daily[-1] != d.data.energy.cool.daily[-1]
+        )
+        sensors = _energy_sensors(devices, d)
+        assert set(sensors) == {"energy_heat_today", "energy_cool_today"}
+        assert sensors["energy_heat_today"].native_value == d.data.energy.heat.daily[-1]
+        assert sensors["energy_cool_today"].native_value == d.data.energy.cool.daily[-1]
