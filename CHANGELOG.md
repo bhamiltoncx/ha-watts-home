@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.2](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.2.1...v1.2.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* map Heat/Cool Today sensors to their own energy channels ([#43](https://github.com/bhamiltoncx/ha-watts-home/issues/43)) ([329056b](https://github.com/bhamiltoncx/ha-watts-home/commit/329056b03640453d8163a48faeeb47abd4c8fc04))
+* read today's run time from the device's weekday slot ([#47](https://github.com/bhamiltoncx/ha-watts-home/issues/47)) ([fb9aa0e](https://github.com/bhamiltoncx/ha-watts-home/commit/fb9aa0e845002c2c074add41a87a910d571dac9d))
+* report Heat/Cool Today as run time hours, not kWh ([#44](https://github.com/bhamiltoncx/ha-watts-home/issues/44)) ([e43cf44](https://github.com/bhamiltoncx/ha-watts-home/commit/e43cf44c8c6d89dcfba68d5ee2482734c6a7aec6))
+
 ## [1.2.1](https://github.com/bhamiltoncx/ha-watts-home/compare/v1.2.0...v1.2.1) (2026-11-05)
 
 
