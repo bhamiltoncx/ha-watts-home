@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 
@@ -132,6 +134,8 @@ class WattsDeviceData(BaseModel):
     dehum: WattsHumControl | None = Field(None, alias="Dehum")
     schedule: WattsSchedule | None = Field(None, alias="Schedule")
     energy: WattsEnergy | None = Field(None, alias="Energy")
+    date_time: datetime | None = Field(None, alias="DateTime")
+    tz_offset: int = Field(0, alias="TZOffset")
 
 
 class WattsDevice(BaseModel):

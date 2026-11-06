@@ -292,3 +292,45 @@ class TestEnergySensors:
         for sensor in sensors.values():
             assert sensor.device_class == SensorDeviceClass.DURATION
             assert sensor.native_unit_of_measurement == UnitOfTime.HOURS
+
+
+def _usage_device(date_time: str, tz_offset: int) -> WattsDevice:
+    # Live 563 data from Friday 2026-11-06; Daily is indexed Monday=0, and
+    # Sunday (Nov 1) through Friday sums to Monthly[10] (November).
+    return WattsDevice.model_validate(
+        {
+            "deviceId": "living-room",
+            "name": "Living Room",
+            "modelNumber": "563",
+            "isConnected": True,
+            "data": {
+                "DateTime": date_time,
+                "TZOffset": tz_offset,
+                "Energy": {
+                    "Heat": {"Daily": [0.0] * 7, "Monthly": [0.0] * 12},
+                    "Cool": {
+                        "Daily": [10.0, 12.3, 7.9, 10.0, 1.7, 19.7, 14.1],
+                        "Monthly": [0.0] * 10 + [56.0, 0.0],
+                    },
+                },
+            },
+        }
+    )
+
+
+class TestEnergyToday:
+    def test_reads_slot_for_device_weekday(self) -> None:
+        d = _usage_device("2026-11-06T17:11:20Z", -25200)
+        sensors = _energy_sensors([d], d)
+        assert sensors["energy_cool_today"].native_value == 1.7
+
+    def test_uses_device_local_date_not_utc(self) -> None:
+        # 03:00Z Saturday is still Friday evening at UTC-7.
+        d = _usage_device("2026-11-07T03:00:00Z", -25200)
+        sensors = _energy_sensors([d], d)
+        assert sensors["energy_cool_today"].native_value == 1.7
+
+    def test_sunday_reads_last_slot(self) -> None:
+        d = _usage_device("2026-11-01T18:00:00Z", -25200)
+        sensors = _energy_sensors([d], d)
+        assert sensors["energy_cool_today"].native_value == 14.1

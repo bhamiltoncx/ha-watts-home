@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -13,11 +15,12 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .coordinator import WattsDataUpdateCoordinator
 from .helpers import device_model_name, device_temperature_unit
-from .models import WattsDevice
+from .models import WattsDevice, WattsEnergyChannel
 
 
 async def async_setup_entry(
@@ -103,6 +106,24 @@ def _device_info(device: WattsDevice) -> DeviceInfo:
         model=device_model_name(device),
         manufacturer="Watts Home",
     )
+
+
+def _usage_today(
+    device: WattsDevice, channel: WattsEnergyChannel | None
+) -> float | None:
+    """Return today's run time from a channel's Daily list.
+
+    Daily holds one slot per weekday (Monday first), not a rolling history,
+    so today is picked by the thermostat's local weekday.
+    """
+    if not channel or len(channel.daily) != 7:
+        return None
+    data = device.data
+    if data and data.date_time:
+        local = data.date_time + timedelta(seconds=data.tz_offset)
+    else:
+        local = dt_util.now()
+    return channel.daily[local.weekday()]
 
 
 class _WattsSensor(CoordinatorEntity[WattsDataUpdateCoordinator], SensorEntity):
@@ -313,9 +334,7 @@ class WattsEnergyHeatSensor(_WattsSensor):
     @property
     def native_value(self) -> float | None:
         d = self._device()
-        if d.data and d.data.energy and d.data.energy.heat and d.data.energy.heat.daily:
-            return d.data.energy.heat.daily[-1]
-        return None
+        return _usage_today(d, d.data.energy.heat if d.data and d.data.energy else None)
 
 
 class WattsEnergyCoolSensor(_WattsSensor):
@@ -333,6 +352,4 @@ class WattsEnergyCoolSensor(_WattsSensor):
     @property
     def native_value(self) -> float | None:
         d = self._device()
-        if d.data and d.data.energy and d.data.energy.cool and d.data.energy.cool.daily:
-            return d.data.energy.cool.daily[-1]
-        return None
+        return _usage_today(d, d.data.energy.cool if d.data and d.data.energy else None)
